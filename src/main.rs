@@ -7,7 +7,7 @@ use lta::bus::bus_arrival::ArrivalBusService;
 use lta::r#async::{bus::get_arrival, lta_client::LTAClient, prelude::*};
 use serde::Serialize;
 use std::fmt::Formatter;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use std::{env::var, time::Duration};
 
 #[derive(Clone)]
@@ -71,7 +71,7 @@ fn get_timings(
     lru_state: web::Data<RwLock<LruState>>,
 ) -> impl Future<Item = HttpResponse, Error = JustBusError> {
     let lru_state_2 = lru_state.clone();
-    let inner = lru_state.read().unwrap();
+    let inner = lru_state.read();
     let in_lru = inner.lru.peek(&83139);
 
     match in_lru {
@@ -87,9 +87,9 @@ fn get_timings(
                 get_arrival(&inner.client, 83139, None)
                     .then(move |r| {
                         r.map(|r| {
-                            let data = r.clone();
-                            let mut lru_w = lru_state_2.write().unwrap();
-                            lru_w.lru.insert(83139, TimingResult::new(83139, data.services));
+                           let data = r.services.clone();
+                            let mut lru_w = lru_state_2.write();
+                            lru_w.lru.insert(83139, TimingResult::new(83139, data));
                             r
                         })
                     })
@@ -104,17 +104,16 @@ type LruCacheU32 = LruCache<u32, TimingResult>;
 
 fn main() {
     println!("Starting server @ 127.0.0.1:8080");
-    let api_key = var("API_KEY").unwrap();
-    let ttl = Duration::from_millis(1000 * 10);
-    let lru_state = LruState::new(
-        LruCacheU32::with_expiry_duration(ttl),
-        LTAClient::with_api_key(api_key),
-    );
-
     HttpServer::new(move || {
+        let api_key = var("API_KEY").unwrap();
+        let ttl = Duration::from_millis(1000 * 15);
+        let lru_state = RwLock::new(LruState::new(
+            LruCacheU32::with_expiry_duration(ttl),
+            LTAClient::with_api_key(api_key),
+        ));
         App::new()
             .route("/api/v1/timings", web::get().to_async(get_timings))
-            .data(lru_state.clone())
+            .data(lru_state)
     })
     .bind("127.0.0.1:8080")
     .unwrap()
