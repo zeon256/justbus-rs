@@ -9,7 +9,7 @@ use lta::bus::bus_arrival::ArrivalBusService;
 use lta::r#async::{bus::get_arrival, lta_client::LTAClient, prelude::*};
 use serde::Serialize;
 use std::fmt::Formatter;
-use std::sync::Mutex;
+use std::sync::RwLock;
 use std::{env::var, time::Duration};
 
 #[derive(Clone)]
@@ -25,7 +25,7 @@ impl LruState {
 }
 
 fn get_timings() -> impl Future<Item = HttpResponse, Error = JustBusError> {
-    let lru_state = LRU_STATE.lock().unwrap();
+    let lru_state = LRU_STATE.read().unwrap();
     let in_lru = lru_state.lru.peek(&83139);
 
     match in_lru {
@@ -43,7 +43,7 @@ fn get_timings() -> impl Future<Item = HttpResponse, Error = JustBusError> {
                         let res = r.and_then(|resp| {
                             let data = resp.clone();
                             LRU_STATE
-                                .lock()
+                                .write()
                                 .unwrap()
                                 .lru
                                 .insert(83139, TimingResult::new(83139,resp.services));
@@ -103,10 +103,10 @@ impl Responder for TimingResult {
 }
 
 lazy_static! {
-    static ref LRU_STATE: Mutex<LruState> = {
+    static ref LRU_STATE: RwLock<LruState> = {
         let api_key = var("API_KEY").unwrap();
         let ttl = Duration::from_millis(1000 * 10);
-        Mutex::new(LruState::new(
+        RwLock::new(LruState::new(
             LruCache::<u32, TimingResult>::with_expiry_duration(ttl),
             LTAClient::with_api_key(api_key),
         ))
