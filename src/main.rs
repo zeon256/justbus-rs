@@ -1,5 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
 use actix_web::{
     web, App, Error as ActixErr, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError,
 };
@@ -16,47 +14,6 @@ use std::{env::var, time::Duration};
 struct LruState {
     pub lru: LruCache<u32, TimingResult>,
     pub client: LTAClient,
-}
-
-impl LruState {
-    pub fn new(lru: LruCache<u32, TimingResult>, client: LTAClient) -> Self {
-        LruState { lru, client }
-    }
-}
-
-fn get_timings() -> impl Future<Item = HttpResponse, Error = JustBusError> {
-    let lru_state = LRU_STATE.read().unwrap();
-    let in_lru = lru_state.lru.peek(&83139);
-
-    match in_lru {
-        Some(data) => {
-            println!("Taking from LRU");
-            Either::A(fut_ok(
-                HttpResponse::Ok().json(TimingResult::new(83139,data.clone().data)),
-            ))
-        }
-        None => {
-            println!("Fresh data from LTA");
-            Either::B(
-                get_arrival(&lru_state.client, 83139, None)
-                    .then(|r| {
-                        let res = r.and_then(|resp| {
-                            let data = resp.clone();
-                            LRU_STATE
-                                .write()
-                                .unwrap()
-                                .lru
-                                .insert(83139, TimingResult::new(83139,resp.services));
-                            Ok(data)
-                        });
-
-                        res
-                    })
-                    .map(|f| HttpResponse::Ok().json(TimingResult::new(83139,f.services)))
-                    .map_err(|e| JustBusError::ClientError(e)),
-            )
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -84,10 +41,12 @@ struct TimingResult {
 
 impl TimingResult {
     pub fn new(bus_stop_code: u32, data: Vec<ArrivalBusService>) -> Self {
-        TimingResult { bus_stop_code, data }
+        TimingResult {
+            bus_stop_code,
+            data,
+        }
     }
 }
-
 
 impl Responder for TimingResult {
     type Error = ActixErr;
@@ -102,23 +61,63 @@ impl Responder for TimingResult {
     }
 }
 
-lazy_static! {
-    static ref LRU_STATE: RwLock<LruState> = {
-        let api_key = var("API_KEY").unwrap();
-        let ttl = Duration::from_millis(1000 * 10);
-        RwLock::new(LruState::new(
-            LruCache::<u32, TimingResult>::with_expiry_duration(ttl),
-            LTAClient::with_api_key(api_key),
-        ))
-    };
+impl LruState {
+    pub fn new(lru: LruCache<u32, TimingResult>, client: LTAClient) -> Self {
+        LruState { lru, client }
+    }
 }
+
+fn get_timings(
+    lru_state: web::Data<RwLock<LruState>>,
+) -> impl Future<Item = HttpResponse, Error = JustBusError> {
+    let lru_state_2 = lru_state.clone();
+    let inner = lru_state.read().unwrap();
+    let in_lru = inner.lru.peek(&83139);
+
+    match in_lru {
+        Some(data) => {
+            println!("Taking from LRU");
+            Either::A(fut_ok(
+                HttpResponse::Ok().json(TimingResult::new(83139, data.clone().data)),
+            ))
+        }
+        None => {
+            println!("Fresh data from LTA");
+            Either::B(
+                get_arrival(&inner.client, 83139, None)
+                    .then(move |r| {
+                        r.map(|r| {
+                            let data = r.clone();
+                            let mut lru_w = lru_state_2.write().unwrap();
+                            lru_w.lru.insert(83139, TimingResult::new(83139, data.services));
+                            r
+                        })
+                    })
+                    .map(|f| HttpResponse::Ok().json(TimingResult::new(83139, f.services)))
+                    .map_err(|e| JustBusError::ClientError(e)),
+            )
+        }
+    }
+}
+
+type LruCacheU32 = LruCache<u32, TimingResult>;
 
 fn main() {
     println!("Starting server @ 127.0.0.1:8080");
+    let api_key = var("API_KEY").unwrap();
+    let ttl = Duration::from_millis(1000 * 10);
+    let lru_state = LruState::new(
+        LruCacheU32::with_expiry_duration(ttl),
+        LTAClient::with_api_key(api_key),
+    );
 
-    HttpServer::new(|| App::new().route("/api/v1/timings", web::get().to_async(get_timings)))
-        .bind("127.0.0.1:8080")
-        .unwrap()
-        .run()
-        .unwrap();
+    HttpServer::new(move || {
+        App::new()
+            .route("/api/v1/timings", web::get().to_async(get_timings))
+            .data(lru_state.clone())
+    })
+    .bind("127.0.0.1:8080")
+    .unwrap()
+    .run()
+    .unwrap();
 }
