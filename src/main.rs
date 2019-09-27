@@ -5,17 +5,11 @@ use futures::future::{ok as fut_ok, Either};
 use lru_time_cache::LruCache;
 use lta::bus::bus_arrival::ArrivalBusService;
 use lta::r#async::{bus::get_arrival, lta_client::LTAClient, prelude::*};
-use serde::Serialize;
-use std::fmt::Formatter;
 use parking_lot::RwLock;
-use std::{env::var, time::Duration};
+use serde::{Deserialize, Serialize};
+use std::fmt::Formatter;
 use std::sync::Arc;
-
-#[derive(Clone)]
-struct LruState {
-    pub lru: LruCache<u32, TimingResult>,
-    pub client: LTAClient,
-}
+use std::{env::var, time::Duration};
 
 #[derive(Debug)]
 enum JustBusError {
@@ -62,40 +56,40 @@ impl Responder for TimingResult {
     }
 }
 
-impl LruState {
-    pub fn new(lru: LruCache<u32, TimingResult>, client: LTAClient) -> Self {
-        println!("Started LRU");
-        LruState { lru, client }
-    }
-}
-
 fn get_timings(
-    lru_state: web::Data<Arc<RwLock<LruState>>>,
+    path: web::Path<u32>,
+    lru: web::Data<RwLock<LruCacheU32>>,
+    client: web::Data<LTAClient>,
 ) -> impl Future<Item = HttpResponse, Error = JustBusError> {
-    let lru_state_2 = lru_state.clone();
-    let inner = lru_state.read();
-    let in_lru = inner.lru.peek(&83139);
+    let inner_path = path.into_inner();
+    let lru_state_2 = lru.clone();
+    let inner = lru.read();
+    let in_lru = inner.peek(&inner_path);
 
     match in_lru {
         Some(data) => {
-//            println!("Taking from LRU");
+            //            println!("Taking from LRU");
             Either::A(fut_ok(
-                HttpResponse::Ok().json(TimingResult::new(83139, data.clone().data)),
+                HttpResponse::Ok().json(TimingResult::new(inner_path, data.clone().data)),
             ))
         }
         None => {
-            println!("Fresh data from LTA");
+            println!(
+                "Fresh data from LTA. client_ptr: {:p}, cache_ptr: {:p}",
+                &client, &lru
+            );
             Either::B(
-                get_arrival(&inner.client, 83139, None)
+                get_arrival(&client, inner_path, None)
                     .then(move |r| {
                         r.map(|r| {
-                           let data = r.services.clone();
+                            let bus_stop = inner_path;
+                            let data = r.services.clone();
                             let mut lru_w = lru_state_2.write();
-                            lru_w.lru.insert(83139, TimingResult::new(83139, data));
-                            r
+                            lru_w.insert(bus_stop, TimingResult::new(bus_stop, data));
+                            (r, bus_stop)
                         })
                     })
-                    .map(|f| HttpResponse::Ok().json(TimingResult::new(83139, f.services)))
+                    .map(|f| HttpResponse::Ok().json(TimingResult::new(f.1, f.0.services)))
                     .map_err(|e| JustBusError::ClientError(e)),
             )
         }
@@ -107,16 +101,18 @@ type LruCacheU32 = LruCache<u32, TimingResult>;
 fn main() {
     println!("Starting server @ 127.0.0.1:8080");
     let api_key = var("API_KEY").unwrap();
-    let ttl = Duration::from_millis(1000 * 15);
-    let lru_state = Arc::new(RwLock::new(LruState::new(
-        LruCacheU32::with_expiry_duration(ttl),
-        LTAClient::with_api_key(api_key),
-    )));
+    let ttl = Duration::from_millis(1000 * 60);
+    let client = web::Data::new(LTAClient::with_api_key(api_key));
+    let lru_cache = web::Data::new(RwLock::new(LruCacheU32::with_expiry_duration(ttl)));
 
     HttpServer::new(move || {
         App::new()
-            .route("/api/v1/timings", web::get().to_async(get_timings))
-            .data(lru_state.clone())
+            .route(
+                "/api/v1/timings/{bus_stop}",
+                web::get().to_async(get_timings),
+            )
+            .register_data(lru_cache.clone())
+            .register_data(client.clone())
     })
     .bind("127.0.0.1:8080")
     .unwrap()
