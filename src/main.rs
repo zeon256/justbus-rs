@@ -9,6 +9,7 @@ use serde::Serialize;
 use std::fmt::Formatter;
 use parking_lot::RwLock;
 use std::{env::var, time::Duration};
+use std::sync::Arc;
 
 #[derive(Clone)]
 struct LruState {
@@ -63,12 +64,13 @@ impl Responder for TimingResult {
 
 impl LruState {
     pub fn new(lru: LruCache<u32, TimingResult>, client: LTAClient) -> Self {
+        println!("Started LRU");
         LruState { lru, client }
     }
 }
 
 fn get_timings(
-    lru_state: web::Data<RwLock<LruState>>,
+    lru_state: web::Data<Arc<RwLock<LruState>>>,
 ) -> impl Future<Item = HttpResponse, Error = JustBusError> {
     let lru_state_2 = lru_state.clone();
     let inner = lru_state.read();
@@ -76,7 +78,7 @@ fn get_timings(
 
     match in_lru {
         Some(data) => {
-            println!("Taking from LRU");
+//            println!("Taking from LRU");
             Either::A(fut_ok(
                 HttpResponse::Ok().json(TimingResult::new(83139, data.clone().data)),
             ))
@@ -104,16 +106,17 @@ type LruCacheU32 = LruCache<u32, TimingResult>;
 
 fn main() {
     println!("Starting server @ 127.0.0.1:8080");
+    let api_key = var("API_KEY").unwrap();
+    let ttl = Duration::from_millis(1000 * 15);
+    let lru_state = Arc::new(RwLock::new(LruState::new(
+        LruCacheU32::with_expiry_duration(ttl),
+        LTAClient::with_api_key(api_key),
+    )));
+
     HttpServer::new(move || {
-        let api_key = var("API_KEY").unwrap();
-        let ttl = Duration::from_millis(1000 * 15);
-        let lru_state = RwLock::new(LruState::new(
-            LruCacheU32::with_expiry_duration(ttl),
-            LTAClient::with_api_key(api_key),
-        ));
         App::new()
             .route("/api/v1/timings", web::get().to_async(get_timings))
-            .data(lru_state)
+            .data(lru_state.clone())
     })
     .bind("127.0.0.1:8080")
     .unwrap()
