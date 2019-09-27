@@ -1,3 +1,4 @@
+extern crate jemallocator;
 use actix_web::{
     web, App, Error as ActixErr, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError,
 };
@@ -6,10 +7,12 @@ use lru_time_cache::LruCache;
 use lta::bus::bus_arrival::ArrivalBusService;
 use lta::r#async::{bus::get_arrival, lta_client::LTAClient, prelude::*};
 use parking_lot::RwLock;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::fmt::Formatter;
-use std::sync::Arc;
 use std::{env::var, time::Duration};
+
+#[global_allocator]
+static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 #[derive(Debug)]
 enum JustBusError {
