@@ -71,7 +71,6 @@ fn get_timings(
 
     match in_lru {
         Some(data) => {
-            //            println!("Taking from LRU");
             Either::A(fut_ok(
                 HttpResponse::Ok().json(TimingResult::new(inner_path, data.clone().data)),
             ))
@@ -89,11 +88,11 @@ fn get_timings(
                             let data = r.services.clone();
                             let mut lru_w = lru_state_2.write();
                             lru_w.insert(bus_stop, TimingResult::new(bus_stop, data));
-                            (r, bus_stop)
+                            r
                         })
                     })
-                    .map(|f| HttpResponse::Ok().json(TimingResult::new(f.1, f.0.services)))
-                    .map_err(|e| JustBusError::ClientError(e)),
+                    .map(|f| HttpResponse::Ok().json(TimingResult::new(f.bus_stop_code, f.services)))
+                    .map_err(JustBusError::ClientError),
             )
         }
     }
@@ -114,8 +113,8 @@ fn main() {
                 "/api/v1/timings/{bus_stop}",
                 web::get().to_async(get_timings),
             )
-            .register_data(lru_cache.clone())
             .register_data(client.clone())
+            .register_data(lru_cache.clone())
     })
     .bind("127.0.0.1:8080")
     .unwrap()
