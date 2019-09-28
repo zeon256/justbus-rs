@@ -117,7 +117,7 @@ Benchmarks here is very simplistic and probably is not scientific in any way.
 
 All benchmark conducted on i7 3770k @ 4.4Ghz 16G ram @ 2200Mhz, linux, 8 threads using `wrk`
 ```
-./wrk -c100 -d15s -t8 http://localhost:8080/api/v1/timings/83139                                        ✔  2583  10:27:31 
+./wrk -c100 -d15s -t8 http://localhost:8080/api/v1/timings/83139 
 ```
 
 ### `actor` style
