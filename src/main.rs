@@ -103,7 +103,7 @@ type LruCacheU32 = LruCache<u32, TimingResult>;
 fn main() {
     println!("Starting server @ 127.0.0.1:8080");
     let api_key = var("API_KEY").unwrap();
-    let ttl = Duration::from_millis(1000 * 60);
+    let ttl = Duration::from_millis(1000 * 15);
     let client = web::Data::new(LTAClient::with_api_key(api_key));
     let lru_cache = web::Data::new(RwLock::new(LruCacheU32::with_expiry_duration(ttl)));
 
