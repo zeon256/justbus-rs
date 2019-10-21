@@ -113,7 +113,7 @@ There are 3 different versions of this project.
 - `lazy_static` global
 
 ## Performance
-Benchmarks here is very simplistic and probably is not scientific in any way.
+Disclaimer: benchmarks are naive and YMMV
 
 All benchmark conducted on i7 3770k @ 4.4Ghz 16G ram @ 2200Mhz, linux, 8 threads using `wrk`
 ```
