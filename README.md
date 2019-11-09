@@ -3,6 +3,10 @@
 >justbus-rs is a lightweight backend that serves LTA Datamall bus timings.
 This project uses [lta-rs](https://github.com/BudiNverse/lta-rs) internally.
 
+<p align="center">
+  <img width="945" height="432" src="./logo.png">
+</p>
+
 ## Usage
 ```
 GET http://localhost:8080/api/v1/timings/83139
@@ -113,7 +117,7 @@ There are 3 different versions of this project.
 - `lazy_static` global
 
 ## Performance
-Benchmarks here is very simplistic and probably is not scientific in any way.
+Disclaimer: benchmarks are naive and YMMV
 
 All benchmark conducted on i7 3770k @ 4.4Ghz 16G ram @ 2200Mhz, linux, 8 threads using `wrk`
 ```
