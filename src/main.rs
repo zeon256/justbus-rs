@@ -70,11 +70,9 @@ fn get_timings(
     let in_lru = inner.peek(&inner_path);
 
     match in_lru {
-        Some(data) => {
-            Either::A(fut_ok(
-                HttpResponse::Ok().json(TimingResult::new(inner_path, data.clone().data)),
-            ))
-        }
+        Some(data) => Either::A(fut_ok(
+            HttpResponse::Ok().json(TimingResult::new(inner_path, data.clone().data)),
+        )),
         None => {
             println!(
                 "Fresh data from LTA. client_ptr: {:p}, cache_ptr: {:p}",
@@ -91,7 +89,9 @@ fn get_timings(
                             r
                         })
                     })
-                    .map(|f| HttpResponse::Ok().json(TimingResult::new(f.bus_stop_code, f.services)))
+                    .map(|f| {
+                        HttpResponse::Ok().json(TimingResult::new(f.bus_stop_code, f.services))
+                    })
                     .map_err(JustBusError::ClientError),
             )
         }
