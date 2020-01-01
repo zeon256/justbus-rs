@@ -1,20 +1,25 @@
 extern crate jemallocator;
-use actix_web::{
-    web, App, HttpResponse, HttpServer, ResponseError,
+use crate::hashmap::{Cache};
+use actix_web::{web, App, HttpResponse, HttpServer, ResponseError, Responder};
+use lta::{
+    prelude::*,
+    r#async::{
+        lta_client::LTAClient,
+        bus::get_arrival
+    },
 };
-use futures::future::{ok as fut_ok, Either};
-use lru_time_cache::LruCache;
-use lta::r#async::{bus::get_arrival, lta_client::LTAClient, prelude::*};
-use parking_lot::RwLock;
 use std::fmt::Formatter;
 use std::{env::var, time::Duration};
+use actix_web::dev::Service;
+
+mod hashmap;
 
 #[global_allocator]
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 #[derive(Debug)]
 enum JustBusError {
-    ClientError(lta::Error),
+    ClientError(lta::utils::LTAError),
 }
 
 impl std::fmt::Display for JustBusError {
@@ -29,55 +34,49 @@ impl ResponseError for JustBusError {
     }
 }
 
-fn get_timings(
-    path: web::Path<u32>,
-    lru: web::Data<RwLock<LruCacheU32>>,
+async fn get_timings(
+    bus_stop: web::Path<u32>,
+    lru: web::Data<Cache<u32, String>>,
     client: web::Data<LTAClient>,
-) -> impl Future<Item = HttpResponse, Error = JustBusError>{
-    let inner_path = path.into_inner();
-    let lru_state_2 = lru.clone();
-    let inner = lru.read();
-    let in_lru = inner.peek(&inner_path);
+) -> Result<HttpResponse, JustBusError> {
+    let bus_stop = bus_stop.into_inner();
+    let in_lru = lru.get(bus_stop);
+    let res = match in_lru {
+        Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
+        None => {
+            let arrivals =  get_arrival(&client, bus_stop, None)
+                .await
+                .map_err(JustBusError::ClientError)?;
+            let arrival_str = serde_json::to_string(&arrivals).unwrap();
+            lru.insert(bus_stop, arrival_str.clone());
+            HttpResponse::Ok().content_type("application/json").body( arrival_str)
+        }
+    };
 
-    match in_lru {
-        Some(f) => Either::A(fut_ok(HttpResponse::Ok().content_type("application/json").body(f))),
-        None => Either::B(
-            get_arrival(&client, inner_path, None)
-                .then(move |r| {
-                    r.map(|r| {
-                        let bus_stop = inner_path;
-                        let data = serde_json::to_string(&r.services).unwrap();
-                        let mut lru_w = lru_state_2.write();
-                        lru_w.insert(bus_stop, data.clone());
-                        data
-                    })
-                })
-                .map(|f| HttpResponse::Ok().content_type("application/json").body(f))
-                .map_err(JustBusError::ClientError),
-        ),
-    }
+    Ok(res)
 }
 
-type LruCacheU32<'a> = LruCache<u32, String>;
+async fn dummy() -> impl Responder {
+    "hello_world"
+}
 
-fn main() {
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
     println!("Starting server @ 127.0.0.1:8080");
-    let api_key = var("API_KEY").expect("API_KEY missing!");
+    let api_key = var("API_KEY").expect("NO API_KEY FOUND!");
     let ttl = Duration::from_millis(1000 * 15);
-    let client = web::Data::new(LTAClient::with_api_key(api_key));
-    let lru_cache = web::Data::new(RwLock::new(LruCacheU32::with_expiry_duration(ttl)));
-
+    let client = LTAClient::with_api_key(api_key);
     HttpServer::new(move || {
         App::new()
+            .route("/api/v1/dummy", web::get().to(dummy))
             .route(
                 "/api/v1/timings/{bus_stop}",
-                web::get().to_async(get_timings),
+                web::get().to(get_timings),
             )
-            .register_data(client.clone())
-            .register_data(lru_cache.clone())
+            .data(client.clone())
+            .data(Cache::<u32, String>::with_ttl(ttl))
     })
-    .bind("127.0.0.1:8080")
-    .unwrap()
+    .bind("127.0.0.1:8080")?
     .run()
-    .unwrap();
+    .await
 }
