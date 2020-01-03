@@ -1,5 +1,6 @@
 <p align="center">
   <img width="945" height="432" src="./logo.png">
+  <img src="https://dev.azure.com/budisyahiddin/lta-rs/_apis/build/status/BudiNverse.justbus-rs?branchName=master">
 </p>
 
 # justbus-rs
