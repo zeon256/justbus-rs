@@ -5,10 +5,7 @@ use lta::{
     prelude::*,
     r#async::{bus::get_arrival, lta_client::LTAClient},
 };
-use std::{
-    fmt::Formatter,
-    time::Duration
-};
+use std::{fmt::Formatter, time::Duration};
 mod hashmap;
 
 #[global_allocator]

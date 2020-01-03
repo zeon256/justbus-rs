@@ -13,173 +13,143 @@ GET http://localhost:8080/api/v1/timings/83139
 ```
 ```json
 {
-    "BusStopCode": 83139,
-    "Data": [
+    "bus_stop_code": 83139,
+    "services": [
         {
-            "ServiceNo": "15",
-            "Operator": "GAS",
-            "NextBus": {
-                "OriginCode": 77009,
-                "DestinationCode": 77009,
-                "EstimatedArrival": "2019-09-28T10:49:24+08:00",
-                "Latitude": 1.3156283333333334,
-                "Longitude": 103.90589216666666,
-                "VisitNumber": 1,
-                "Load": "SDA",
-                "Feature": "WAB",
-                "Type": "SD"
-            },
-            "NextBus2": {
-                "OriginCode": 77009,
-                "DestinationCode": 77009,
-                "EstimatedArrival": "2019-09-28T11:03:49+08:00",
-                "Latitude": 1.3382883333333333,
-                "Longitude": 103.91794783333333,
-                "VisitNumber": 1,
-                "Load": "SEA",
-                "Feature": "WAB",
-                "Type": "SD"
-            },
-            "NextBus3": {
-                "OriginCode": 77009,
-                "DestinationCode": 77009,
-                "EstimatedArrival": "2019-09-28T11:12:23+08:00",
-                "Latitude": 1.3450285,
-                "Longitude": 103.93672483333333,
-                "VisitNumber": 1,
-                "Load": "SEA",
-                "Feature": "WAB",
-                "Type": "SD"
-            }
+            "service_no": "15",
+            "operator": "GAS",
+            "next_bus": [
+                {
+                    "origin_code": 77009,
+                    "dest_code": 77009,
+                    "est_arrival": "2020-01-03T19:17:05+08:00",
+                    "lat": 1.338279,
+                    "long": 103.91795633333334,
+                    "visit_no": 1,
+                    "load": "SeatsAvailable",
+                    "feature": "WheelChairAccessible",
+                    "bus_type": "SingleDecker"
+                },
+                {
+                    "origin_code": 77009,
+                    "dest_code": 77009,
+                    "est_arrival": "2020-01-03T19:30:48+08:00",
+                    "lat": 1.3516848333333333,
+                    "long": 103.94422416666667,
+                    "visit_no": 1,
+                    "load": "SeatsAvailable",
+                    "feature": "WheelChairAccessible",
+                    "bus_type": "SingleDecker"
+                },
+                null
+            ]
         },
         {
-            "ServiceNo": "150",
-            "Operator": "SBST",
-            "NextBus": {
-                "OriginCode": 82009,
-                "DestinationCode": 82009,
-                "EstimatedArrival": "2019-09-28T10:55:40+08:00",
-                "Latitude": 0,
-                "Longitude": 0,
-                "VisitNumber": 1,
-                "Load": "SEA",
-                "Feature": "WAB",
-                "Type": "SD"
-            },
-            "NextBus2": {
-                "OriginCode": 82009,
-                "DestinationCode": 82009,
-                "EstimatedArrival": "2019-09-28T11:23:00+08:00",
-                "Latitude": 0,
-                "Longitude": 0,
-                "VisitNumber": 1,
-                "Load": "SEA",
-                "Feature": "WAB",
-                "Type": "SD"
-            },
-            "NextBus3": null
+            "service_no": "150",
+            "operator": "SBST",
+            "next_bus": [
+                {
+                    "origin_code": 82009,
+                    "dest_code": 82009,
+                    "est_arrival": "2020-01-03T18:57:35+08:00",
+                    "lat": 1.3148378333333333,
+                    "long": 103.9098375,
+                    "visit_no": 1,
+                    "load": "StandingAvailable",
+                    "feature": "WheelChairAccessible",
+                    "bus_type": "SingleDecker"
+                },
+                {
+                    "origin_code": 82009,
+                    "dest_code": 82009,
+                    "est_arrival": "2020-01-03T19:11:12+08:00",
+                    "lat": 0.0,
+                    "long": 0.0,
+                    "visit_no": 1,
+                    "load": "SeatsAvailable",
+                    "feature": "WheelChairAccessible",
+                    "bus_type": "SingleDecker"
+                },
+                {
+                    "origin_code": 82009,
+                    "dest_code": 82009,
+                    "est_arrival": "2020-01-03T19:23:12+08:00",
+                    "lat": 0.0,
+                    "long": 0.0,
+                    "visit_no": 1,
+                    "load": "SeatsAvailable",
+                    "feature": "WheelChairAccessible",
+                    "bus_type": "SingleDecker"
+                }
+            ]
         },
         {
-            "ServiceNo": "155",
-            "Operator": "SBST",
-            "NextBus": {
-                "OriginCode": 52009,
-                "DestinationCode": 84009,
-                "EstimatedArrival": "2019-09-28T11:03:13+08:00",
-                "Latitude": 1.3189968333333333,
-                "Longitude": 103.88656283333333,
-                "VisitNumber": 1,
-                "Load": "SEA",
-                "Feature": "WAB",
-                "Type": "SD"
-            },
-            "NextBus2": {
-                "OriginCode": 52009,
-                "DestinationCode": 84009,
-                "EstimatedArrival": "2019-09-28T11:19:25+08:00",
-                "Latitude": 1.3275061666666668,
-                "Longitude": 103.88342483333334,
-                "VisitNumber": 1,
-                "Load": "SEA",
-                "Feature": "WAB",
-                "Type": "SD"
-            },
-            "NextBus3": null
+            "service_no": "155",
+            "operator": "SBST",
+            "next_bus": [
+                {
+                    "origin_code": 52009,
+                    "dest_code": 84009,
+                    "est_arrival": "2020-01-03T19:11:50+08:00",
+                    "lat": 1.3198983333333334,
+                    "long": 103.8912305,
+                    "visit_no": 1,
+                    "load": "StandingAvailable",
+                    "feature": "WheelChairAccessible",
+                    "bus_type": "SingleDecker"
+                },
+                {
+                    "origin_code": 52009,
+                    "dest_code": 84009,
+                    "est_arrival": "2020-01-03T19:26:45+08:00",
+                    "lat": 1.3236286666666666,
+                    "long": 103.88722233333333,
+                    "visit_no": 1,
+                    "load": "StandingAvailable",
+                    "feature": "WheelChairAccessible",
+                    "bus_type": "SingleDecker"
+                },
+                null
+            ]
         }
     ]
 }
 ```
 
-### Versions
-There are 3 different versions of this project.
-- `actor` style
-- `standard` style
-- `lazy_static` global
+## Optimisations (in order of impact)
+- caching response with a lock-free hashmap
+- caching only serialised data (ie `String`) to prevent tranforming struct to json response for every request
+- jemalloc
 
 ## Performance
 Disclaimer: benchmarks are naive and YMMV
 
-All benchmark conducted on i7 3770k @ 4.4Ghz 16G ram @ 2200Mhz, linux, 8 threads using `wrk`
+All benchmark conducted on i7 3770k @ 4.4Ghz 16G ram @ 2200Mhz, ubuntu 18.04 LTS  `wrk`
 ```
-./wrk -c100 -d15s -t8 http://localhost:8080/api/v1/timings/83139 
+./wrk -c100 -d15s -t4 http://localhost:8080/api/v1/timings/83139 
+```
+```
+zeon@zeon-desktop  ~  wrk -c100 -d15s -t4 http://localhost:8080/api/v1/timings/83139
+Running 15s test @ http://localhost:8080/api/v1/timings/83139
+  4 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     4.10ms   27.83ms 839.99ms   99.60%
+    Req/Sec    64.04k    17.90k   89.25k    46.88%
+  3812462 requests in 15.09s, 6.37GB read
+  Non-2xx or 3xx responses: 115
+Requests/sec: 252570.08
+Transfer/sec:    431.87MB
 ```
 
-### `actor` style
-Uses actix actors
+Hello World benchmark
 ```
-Running 15s test @ http://localhost:8080/api/v1/timings/83139
-  8 threads and 100 connections
+zeon@zeon-desktop  ~  wrk -c100 -d15s -t4 http://localhost:8080/api/v1/dummy
+Running 15s test @ http://localhost:8080/api/v1/dummy
+  4 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     3.25ms    4.72ms 130.32ms   91.45%
-    Req/Sec     4.91k   423.14     7.20k    80.08%
-  586656 requests in 15.04s, 1.05GB read
-  Non-2xx or 3xx responses: 53
-Requests/sec:  39012.75
-Transfer/sec:     71.73MB
-```
-Memory usage
-```
-Initial memory usage: 1.5MiB
-Idle memory usage after 1 round: 9.2MiB
-Benchmark memory usage: 13.6MiB
-```
-
-### `standard` style
-Uses RwLock
-```
-Running 15s test @ http://localhost:8080/api/v1/timings/83139
-  8 threads and 100 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.75ms    4.65ms 126.20ms   93.37%
-    Req/Sec    17.05k     4.24k   31.19k    74.52%
-  2046115 requests in 15.10s, 4.01GB read
-  Non-2xx or 3xx responses: 52
-Requests/sec: 135476.59
-Transfer/sec:    271.96MB
-```
-Memory usage
-```
-Initial memory usage: 3.5MiB
-Idle memory usage after 1 round: 13.7MiB
-Benchmark memory usage: 13.7MiB
-```
-
-### `lazy_static` style
-Uses RwLock and lazy_static
-```
-Running 15s test @ http://localhost:8080/api/v1/timings/83139
-  8 threads and 100 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.45ms    4.34ms 134.37ms   96.36%
-    Req/Sec    16.55k     4.46k   73.19k    73.58%
-  1981869 requests in 15.10s, 4.00GB read
-  Non-2xx or 3xx responses: 53
-Requests/sec: 131223.26
-Transfer/sec:    271.18MB
-```
-Memory usage
-```
-Initial memory usage: 2.6MiB
-Idle memory usage after 1 round: 13.9MiB
-Benchmark memory usage: 13.9MiB
+    Latency     1.33ms    2.74ms  38.44ms   89.56%
+    Req/Sec    61.03k    15.00k   92.95k    61.47%
+  3643319 requests in 15.10s, 444.74MB read
+Requests/sec: 241334.14
+Transfer/sec:     29.46MB
 ```

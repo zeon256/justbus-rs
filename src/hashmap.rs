@@ -26,7 +26,7 @@ impl<V> InternalEntry<V> {
     }
 }
 
-pub struct Cache<K: Hash + Eq, V: Clone> {
+pub struct Cache<K: Hash + Eq, V> {
     map: HashMap<K, InternalEntry<V>>,
     ttl: Duration,
 }
@@ -38,7 +38,17 @@ impl<K: Hash + Eq, V: Clone> Cache<K, V> {
         }
     }
 
-    pub fn insert(&self, key: K, value: V) -> Option<V> {
+    pub fn with_ttl_and_size(ttl: Duration, capacity: usize) -> Self {
+        Cache {
+            map: HashMap::<K, InternalEntry<V>>::with_capacity(capacity),
+            ttl,
+        }
+    }
+
+    pub fn insert<V>(&self, key: K, value: V) -> Option<V>
+    where
+        V: Clone,
+    {
         self.map
             .insert(key, InternalEntry::new(value, Instant::now() + self.ttl))
             .and_then(|f| f.get())
