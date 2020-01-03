@@ -40,8 +40,11 @@ async fn get_timings(
         None => {
             let arrivals = get_arrival(&client, bus_stop, None)
                 .await
-                .map_err(JustBusError::ClientError)?;
+                .map_err(JustBusError::ClientError)?
+                .services;
+
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
+
             lru.insert(bus_stop, arrival_str.clone());
             HttpResponse::Ok()
                 .content_type("application/json")
@@ -52,14 +55,14 @@ async fn get_timings(
     Ok(res)
 }
 
-async fn dummy() -> impl Responder {
+async fn dummy() -> &'static str {
     "hello_world"
 }
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     println!("Starting server @ 127.0.0.1:8080");
-    let api_key = env!("API_KEY");
+    let api_key = std::env::var("API_KEY").expect("API_KEY NOT FOUND!");
     let ttl = Duration::from_secs(15);
     let client = LTAClient::with_api_key(api_key);
     HttpServer::new(move || {

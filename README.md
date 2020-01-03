@@ -1,6 +1,17 @@
 <p align="center">
   <img width="945" height="432" src="./logo.png">
-  <img src="https://dev.azure.com/budisyahiddin/lta-rs/_apis/build/status/BudiNverse.justbus-rs?branchName=master">
+    <a href="https://github.com/BudiNverse/justbus-rs">
+      <img src="https://img.shields.io/badge/-justbus--rs-blueviolet.svg"/>
+    </a>
+    <a href="https://github.com/BudiNverse/justbus-rs">
+        <img src="https://img.shields.io/github/license/BudiNverse/justbus-rs"/>
+    </a>
+    <a href="https://dev.azure.com/budisyahiddin/lta-rs/_build?definitionId=7">
+        <img src="https://dev.azure.com/budisyahiddin/lta-rs/_apis/build/status/BudiNverse.justbus-rs?branchName=master">  
+    </a>
+    <a href="https://github.com/BudiNverse/lta-rs">
+        <img src="https://img.shields.io/badge/rust-1.3.9-blueviolet.svg"/>
+    </a>      
 </p>
 
 # justbus-rs
