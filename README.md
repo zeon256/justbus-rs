@@ -1,11 +1,11 @@
+<p align="center">
+  <img width="945" height="432" src="./logo.png">
+</p>
+
 # justbus-rs
 
 >justbus-rs is a lightweight backend that serves LTA Datamall bus timings.
 This project uses [lta-rs](https://github.com/BudiNverse/lta-rs) internally.
-
-<p align="center">
-  <img width="945" height="432" src="./logo.png">
-</p>
 
 ## Usage
 ```
