@@ -171,3 +171,6 @@ Requirements: `jemalloc`
 ```
 cargo build --release
 ```
+
+## License
+justbus-rs is licensed under MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
