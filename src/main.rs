@@ -1,3 +1,4 @@
+#[cfg(not(target_env = "msvc"))]
 extern crate jemallocator;
 use crate::hashmap::Cache;
 use actix_web::{web, App, HttpResponse, HttpServer, ResponseError};
@@ -8,6 +9,7 @@ use lta::{
 use std::{fmt::Formatter, time::Duration};
 mod hashmap;
 
+#[cfg(not(target_env = "msvc"))]
 #[global_allocator]
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
