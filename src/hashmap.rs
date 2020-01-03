@@ -41,10 +41,10 @@ impl<K: Hash + Eq, V: Clone> Cache<K, V> {
     pub fn insert(&self, key: K, value: V) -> Option<V> {
         self.map
             .insert(key, InternalEntry::new(value, Instant::now() + self.ttl))
-            .map(|f| f.value)
+            .and_then(|f| f.get())
     }
 
     pub fn get(&self, key: K) -> Option<V> {
-        self.map.get(&key).map(|f| f.get().unwrap())
+        self.map.get(&key).and_then(|f| f.get())
     }
 }

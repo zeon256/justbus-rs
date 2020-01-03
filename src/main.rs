@@ -1,17 +1,14 @@
 extern crate jemallocator;
-use crate::hashmap::{Cache};
-use actix_web::{web, App, HttpResponse, HttpServer, ResponseError, Responder};
+use crate::hashmap::Cache;
+use actix_web::{web, App, HttpResponse, HttpServer, Responder, ResponseError};
 use lta::{
     prelude::*,
-    r#async::{
-        lta_client::LTAClient,
-        bus::get_arrival
-    },
+    r#async::{bus::get_arrival, lta_client::LTAClient},
 };
-use std::fmt::Formatter;
-use std::{env::var, time::Duration};
-use actix_web::dev::Service;
-
+use std::{
+    fmt::Formatter,
+    time::Duration
+};
 mod hashmap;
 
 #[global_allocator]
@@ -44,12 +41,14 @@ async fn get_timings(
     let res = match in_lru {
         Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
         None => {
-            let arrivals =  get_arrival(&client, bus_stop, None)
+            let arrivals = get_arrival(&client, bus_stop, None)
                 .await
                 .map_err(JustBusError::ClientError)?;
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
             lru.insert(bus_stop, arrival_str.clone());
-            HttpResponse::Ok().content_type("application/json").body( arrival_str)
+            HttpResponse::Ok()
+                .content_type("application/json")
+                .body(arrival_str)
         }
     };
 
@@ -63,16 +62,13 @@ async fn dummy() -> impl Responder {
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     println!("Starting server @ 127.0.0.1:8080");
-    let api_key = var("API_KEY").expect("NO API_KEY FOUND!");
-    let ttl = Duration::from_millis(1000 * 15);
+    let api_key = env!("API_KEY");
+    let ttl = Duration::from_secs(15);
     let client = LTAClient::with_api_key(api_key);
     HttpServer::new(move || {
         App::new()
             .route("/api/v1/dummy", web::get().to(dummy))
-            .route(
-                "/api/v1/timings/{bus_stop}",
-                web::get().to(get_timings),
-            )
+            .route("/api/v1/timings/{bus_stop}", web::get().to(get_timings))
             .data(client.clone())
             .data(Cache::<u32, String>::with_ttl(ttl))
     })
