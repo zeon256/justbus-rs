@@ -131,12 +131,12 @@ GET http://localhost:8080/api/v1/timings/83139
 ## Optimisations (in order of impact)
 - caching response with a lock-free hashmap
 - caching only serialised data (ie `String`) to prevent tranforming struct to json response for every request
-- jemalloc
+- `jemalloc`
 
 ## Performance
 Disclaimer: benchmarks are naive and YMMV
 
-All benchmark conducted on i7 3770k @ 4.4Ghz 16G ram @ 2200Mhz, ubuntu 18.04 LTS  `wrk`
+i7 3770k @ 4.4Ghz 16G ram @ 2200Mhz, ubuntu 18.04 LTS  `wrk`
 ```
 ./wrk -c100 -d15s -t4 http://localhost:8080/api/v1/timings/83139 
 ```
@@ -164,4 +164,10 @@ Running 15s test @ http://localhost:8080/api/v1/dummy
   3643319 requests in 15.10s, 444.74MB read
 Requests/sec: 241334.14
 Transfer/sec:     29.46MB
+```
+
+## How to build
+Requirements: `jemalloc`
+```
+cargo build --release
 ```

@@ -1,6 +1,6 @@
 extern crate jemallocator;
 use crate::hashmap::Cache;
-use actix_web::{web, App, HttpResponse, HttpServer, Responder, ResponseError};
+use actix_web::{web, App, HttpResponse, HttpServer, ResponseError};
 use lta::{
     prelude::*,
     r#async::{bus::get_arrival, lta_client::LTAClient},
@@ -70,7 +70,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/v1/dummy", web::get().to(dummy))
             .route("/api/v1/timings/{bus_stop}", web::get().to(get_timings))
             .data(client.clone())
-            .data(Cache::<u32, String>::with_ttl(ttl))
+            .data(Cache::<u32, String>::with_ttl_and_size(ttl, 500))
     })
     .bind("127.0.0.1:8080")?
     .run()
