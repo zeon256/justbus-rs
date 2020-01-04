@@ -24,108 +24,125 @@ This project uses [lta-rs](https://github.com/BudiNverse/lta-rs) internally.
 GET http://localhost:8080/api/v1/timings/83139
 ```
 ```json
-{
-    "bus_stop_code": 83139,
-    "services": [
-        {
-            "service_no": "15",
-            "operator": "GAS",
-            "next_bus": [
-                {
-                    "origin_code": 77009,
-                    "dest_code": 77009,
-                    "est_arrival": "2020-01-03T19:17:05+08:00",
-                    "lat": 1.338279,
-                    "long": 103.91795633333334,
-                    "visit_no": 1,
-                    "load": "SeatsAvailable",
-                    "feature": "WheelChairAccessible",
-                    "bus_type": "SingleDecker"
-                },
-                {
-                    "origin_code": 77009,
-                    "dest_code": 77009,
-                    "est_arrival": "2020-01-03T19:30:48+08:00",
-                    "lat": 1.3516848333333333,
-                    "long": 103.94422416666667,
-                    "visit_no": 1,
-                    "load": "SeatsAvailable",
-                    "feature": "WheelChairAccessible",
-                    "bus_type": "SingleDecker"
-                },
-                null
-            ]
-        },
-        {
-            "service_no": "150",
-            "operator": "SBST",
-            "next_bus": [
-                {
-                    "origin_code": 82009,
-                    "dest_code": 82009,
-                    "est_arrival": "2020-01-03T18:57:35+08:00",
-                    "lat": 1.3148378333333333,
-                    "long": 103.9098375,
-                    "visit_no": 1,
-                    "load": "StandingAvailable",
-                    "feature": "WheelChairAccessible",
-                    "bus_type": "SingleDecker"
-                },
-                {
-                    "origin_code": 82009,
-                    "dest_code": 82009,
-                    "est_arrival": "2020-01-03T19:11:12+08:00",
-                    "lat": 0.0,
-                    "long": 0.0,
-                    "visit_no": 1,
-                    "load": "SeatsAvailable",
-                    "feature": "WheelChairAccessible",
-                    "bus_type": "SingleDecker"
-                },
-                {
-                    "origin_code": 82009,
-                    "dest_code": 82009,
-                    "est_arrival": "2020-01-03T19:23:12+08:00",
-                    "lat": 0.0,
-                    "long": 0.0,
-                    "visit_no": 1,
-                    "load": "SeatsAvailable",
-                    "feature": "WheelChairAccessible",
-                    "bus_type": "SingleDecker"
-                }
-            ]
-        },
-        {
-            "service_no": "155",
-            "operator": "SBST",
-            "next_bus": [
-                {
-                    "origin_code": 52009,
-                    "dest_code": 84009,
-                    "est_arrival": "2020-01-03T19:11:50+08:00",
-                    "lat": 1.3198983333333334,
-                    "long": 103.8912305,
-                    "visit_no": 1,
-                    "load": "StandingAvailable",
-                    "feature": "WheelChairAccessible",
-                    "bus_type": "SingleDecker"
-                },
-                {
-                    "origin_code": 52009,
-                    "dest_code": 84009,
-                    "est_arrival": "2020-01-03T19:26:45+08:00",
-                    "lat": 1.3236286666666666,
-                    "long": 103.88722233333333,
-                    "visit_no": 1,
-                    "load": "StandingAvailable",
-                    "feature": "WheelChairAccessible",
-                    "bus_type": "SingleDecker"
-                },
-                null
-            ]
-        }
-    ]
-}
+[
+    {
+        "service_no": "15",
+        "operator": "GAS",
+        "next_bus": [
+            {
+                "origin_code": 77009,
+                "dest_code": 77009,
+                "est_arrival": "2020-01-04T15:12:31+08:00",
+                "lat": 1.3254953333333335,
+                "long": 103.90585966666667,
+                "visit_no": 1,
+                "load": "SeatsAvailable",
+                "feature": "WheelChairAccessible",
+                "bus_type": "SingleDecker"
+            },
+            {
+                "origin_code": 77009,
+                "dest_code": 77009,
+                "est_arrival": "2020-01-04T15:19:03+08:00",
+                "lat": 1.3351438333333334,
+                "long": 103.9091055,
+                "visit_no": 1,
+                "load": "SeatsAvailable",
+                "feature": "WheelChairAccessible",
+                "bus_type": "SingleDecker"
+            },
+            {
+                "origin_code": 77009,
+                "dest_code": 77009,
+                "est_arrival": "2020-01-04T15:33:05+08:00",
+                "lat": 1.3459406666666667,
+                "long": 103.9426515,
+                "visit_no": 1,
+                "load": "SeatsAvailable",
+                "feature": "WheelChairAccessible",
+                "bus_type": "SingleDecker"
+            }
+        ]
+    },
+    {
+        "service_no": "150",
+        "operator": "SBST",
+        "next_bus": [
+            {
+                "origin_code": 82009,
+                "dest_code": 82009,
+                "est_arrival": "2020-01-04T15:07:50+08:00",
+                "lat": 1.3147168333333332,
+                "long": 103.90623166666667,
+                "visit_no": 1,
+                "load": "SeatsAvailable",
+                "feature": "WheelChairAccessible",
+                "bus_type": "SingleDecker"
+            },
+            {
+                "origin_code": 82009,
+                "dest_code": 82009,
+                "est_arrival": "2020-01-04T15:20:54+08:00",
+                "lat": 0.0,
+                "long": 0.0,
+                "visit_no": 1,
+                "load": "SeatsAvailable",
+                "feature": "WheelChairAccessible",
+                "bus_type": "SingleDecker"
+            },
+            {
+                "origin_code": 82009,
+                "dest_code": 82009,
+                "est_arrival": "2020-01-04T15:32:54+08:00",
+                "lat": 0.0,
+                "long": 0.0,
+                "visit_no": 1,
+                "load": "SeatsAvailable",
+                "feature": "WheelChairAccessible",
+                "bus_type": "SingleDecker"
+            }
+        ]
+    },
+    {
+        "service_no": "155",
+        "operator": "SBST",
+        "next_bus": [
+            {
+                "origin_code": 52009,
+                "dest_code": 84009,
+                "est_arrival": "2020-01-04T15:07:39+08:00",
+                "lat": 1.31445,
+                "long": 103.90634883333334,
+                "visit_no": 1,
+                "load": "StandingAvailable",
+                "feature": "WheelChairAccessible",
+                "bus_type": "SingleDecker"
+            },
+            {
+                "origin_code": 52009,
+                "dest_code": 84009,
+                "est_arrival": "2020-01-04T15:24:52+08:00",
+                "lat": 1.3201654999999999,
+                "long": 103.88181566666667,
+                "visit_no": 1,
+                "load": "SeatsAvailable",
+                "feature": "WheelChairAccessible",
+                "bus_type": "SingleDecker"
+            },
+            {
+                "origin_code": 52009,
+                "dest_code": 84009,
+                "est_arrival": "2020-01-04T15:42:38+08:00",
+                "lat": 1.3347515,
+                "long": 103.8782805,
+                "visit_no": 1,
+                "load": "StandingAvailable",
+                "feature": "WheelChairAccessible",
+                "bus_type": "SingleDecker"
+            }
+        ]
+    }
+]
 ```
 
 ## Optimisations (in order of impact)
