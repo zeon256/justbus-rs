@@ -191,7 +191,7 @@ Transfer/sec:     29.46MB
 ```
 
 ## How to build
-Requirements: `jemalloc`
+Requirements: `jemalloc` and `libssl`
 ```
 cargo build --release
 ```
