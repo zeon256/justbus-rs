@@ -23,6 +23,10 @@ This project uses [lta-rs](https://github.com/BudiNverse/lta-rs) internally.
 ```
 GET http://localhost:8080/api/v1/timings/83139
 ```
+<details>
+<summary>
+Click to show API response
+</summary>
 ```json
 [
     {
@@ -144,6 +148,7 @@ GET http://localhost:8080/api/v1/timings/83139
     }
 ]
 ```
+</details>
 
 ## Optimisations (in order of impact)
 - caching response with a lock-free hashmap
