@@ -7,6 +7,8 @@ use lta::{
     r#async::{bus::get_arrival, lta_client::LTAClient},
 };
 use std::{fmt::Formatter, time::Duration};
+use std::env::var;
+
 mod hashmap;
 
 #[cfg(not(target_env = "msvc"))]
@@ -63,8 +65,9 @@ async fn dummy() -> &'static str {
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    println!("Starting server @ 127.0.0.1:8080");
-    let api_key = std::env::var("API_KEY").expect("API_KEY NOT FOUND!");
+    let server_ip_and_port = var("IP_ADDR").unwrap_or("127.0.0.1:8080".to_string());
+    println!("Starting server @ {}", &server_ip_and_port);
+    let api_key = var("API_KEY").expect("API_KEY NOT FOUND!");
     let ttl = Duration::from_secs(15);
     let client = LTAClient::with_api_key(api_key);
     HttpServer::new(move || {
@@ -74,7 +77,7 @@ async fn main() -> std::io::Result<()> {
             .data(client.clone())
             .data(Cache::<u32, String>::with_ttl_and_size(ttl, 500))
     })
-    .bind("127.0.0.1:8080")?
+    .bind(server_ip_and_port)?
     .run()
     .await
 }
