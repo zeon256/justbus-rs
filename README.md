@@ -172,5 +172,17 @@ Requirements: `jemalloc`
 cargo build --release
 ```
 
+## How to run
+```
+export API_KEY=YOUR_API_KEY
+cargo run --release
+```
+
+## Docker
+```
+docker pull inverse/justbus_rs
+docker run -d -p 8080:8080 -e API_KEY=YOUR_API_KEY -e IP_ADDR='0.0.0.0:8080' inverse/justbus_rs
+```
+
 ## License
 justbus-rs is licensed under MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
