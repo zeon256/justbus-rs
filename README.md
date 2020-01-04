@@ -27,6 +27,7 @@ GET http://localhost:8080/api/v1/timings/83139
 <summary>
 Click to show API response
 </summary>
+
 ```json
 [
     {
@@ -148,6 +149,7 @@ Click to show API response
     }
 ]
 ```
+
 </details>
 
 ## Optimisations (in order of impact)
