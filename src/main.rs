@@ -38,10 +38,10 @@ async fn main() -> std::io::Result<()> {
             .data(client.clone());
 
         #[cfg(feature = "cht")]
-        let app = app.data(ChtCache::<u32, String>::with_ttl(ttl));
+        let app = app.data(ChtCache::<u32, String>::with_ttl_and_size(ttl, 500));
 
         #[cfg(feature = "hashbrown")]
-        let app = app.data(RwLock::new(HashBrownCache::<u32, String>::with_ttl(ttl)));
+        let app = app.data(RwLock::new(HashBrownCache::<u32, String>::with_ttl_and_size(ttl, 500)));
 
         app
     })
