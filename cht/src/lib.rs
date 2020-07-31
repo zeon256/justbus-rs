@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 #[cfg(test)]
 mod test {
-    use crate::hashmap::Cache;
+    use crate::Cache;
     use std::thread;
     use std::time::Duration;
 
@@ -26,7 +26,6 @@ mod test {
         thread::sleep(Duration::from_millis(10));
         assert_eq!(hm.get(32), Some("hello_32_replaced"));
         println!("{:?}", hm.get(32));
-
     }
 }
 
@@ -58,6 +57,7 @@ pub struct Cache<K: Hash + Eq, V> {
     map: HashMap<K, InternalEntry<V>>,
     ttl: Duration,
 }
+
 impl<K: Hash + Eq, V: Clone> Cache<K, V> {
     pub fn with_ttl(ttl: Duration) -> Self {
         Cache {
