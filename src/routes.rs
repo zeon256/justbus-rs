@@ -11,7 +11,6 @@ use hashbrown_time::Cache as HashBrownCache;
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;
 
-
 type JustBusResult = Result<HttpResponse, JustBusError>;
 
 pub async fn dummy() -> &'static str {
@@ -68,9 +67,7 @@ pub async fn get_timings(
 
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
             let mut lru_w = lru.write();
-
-            let x = lru_w.insert(bus_stop, arrival_str.clone());
-            dbg!(x);
+            lru_w.insert(bus_stop, arrival_str.clone());
 
             HttpResponse::Ok()
                 .content_type("application/json")

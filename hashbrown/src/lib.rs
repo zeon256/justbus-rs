@@ -1,15 +1,15 @@
-use std::hash::Hash;
-use std::time::{Duration, Instant};
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::hash::Hash;
+use std::time::{Duration, Instant};
 
 #[cfg(test)]
 mod test {
     use crate::Cache;
+    use crossbeam::thread::scope;
+    use std::sync::{Arc, RwLock as StdRwLock};
     use std::thread;
     use std::time::Duration;
-    use std::sync::{Arc, RwLock as StdRwLock};
-    use crossbeam::thread::scope;
 
     const DURATION: Duration = Duration::from_secs(1);
 
@@ -108,12 +108,10 @@ impl<K: Hash + Eq, V: Debug> Cache<K, V> {
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
         let to_insert = InternalEntry::new(value, Instant::now() + self.ttl);
-        self.map.insert(key, to_insert)
-            .map(|v| v.value)
+        self.map.insert(key, to_insert).map(|v| v.value)
     }
 
     pub fn get(&self, key: K) -> Option<&V> {
-        self.map
-            .get(&key).and_then(|f| f.get())
+        self.map.get(&key).and_then(|f| f.get())
     }
 }
