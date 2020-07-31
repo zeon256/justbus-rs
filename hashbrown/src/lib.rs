@@ -1,14 +1,14 @@
 use std::hash::Hash;
 use std::time::{Duration, Instant};
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 #[cfg(test)]
 mod test {
     use crate::Cache;
     use std::thread;
     use std::time::Duration;
-    use parking_lot::RwLock;
-    use std::sync::Arc;
+    use std::sync::{Arc, RwLock as StdRwLock};
     use crossbeam::thread::scope;
 
     const DURATION: Duration = Duration::from_secs(1);
@@ -31,15 +31,44 @@ mod test {
         assert_eq!(hm.get(32), Some(&"hello_32_replaced"));
         println!("{:?}", hm.get(32));
     }
+
+    #[test]
+    fn hm_test_multi_threaded_std() {
+        let hm = StdRwLock::new(Cache::with_ttl(DURATION.clone()));
+
+        {
+            let mut hm_w = hm.write().unwrap();
+            // insert an entry that will expire in 1s
+            hm_w.insert(32, "hello_32");
+            thread::sleep(DURATION.clone());
+        }
+
+        {
+            let hm_r = hm.read().unwrap();
+
+            assert_eq!(hm_r.get(32), None);
+            println!("{:?}", hm_r.get(32));
+        }
+
+        {
+            let mut hm_w = hm.write().unwrap();
+            // check if value with same key is replaced
+            hm_w.insert(32, "hello_32_replaced");
+        }
+
+        let hm_r = hm.read().unwrap();
+        assert_eq!(hm_r.get(32), Some(&"hello_32_replaced"));
+        println!("{:?}", hm_r.get(32));
+    }
 }
 
-#[derive(Clone)]
-struct InternalEntry<V> {
+#[derive(Debug, Clone)]
+struct InternalEntry<V: Debug> {
     value: V,
     expiration: Instant,
 }
 
-impl<V> InternalEntry<V> {
+impl<V: Debug> InternalEntry<V> {
     pub fn new(value: V, expiration: Instant) -> Self {
         InternalEntry { value, expiration }
     }
@@ -57,12 +86,12 @@ impl<V> InternalEntry<V> {
     }
 }
 
-pub struct Cache<K: Hash + Eq, V> {
+pub struct Cache<K: Hash + Eq, V: Debug> {
     map: HashMap<K, InternalEntry<V>>,
     ttl: Duration,
 }
 
-impl<K: Hash + Eq, V: Clone> Cache<K, V> {
+impl<K: Hash + Eq, V: Debug> Cache<K, V> {
     pub fn with_ttl(ttl: Duration) -> Self {
         Cache {
             map: HashMap::<K, InternalEntry<V>>::new(),
@@ -78,7 +107,8 @@ impl<K: Hash + Eq, V: Clone> Cache<K, V> {
     }
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
-        self.map.insert(key, InternalEntry::new(value, Instant::now() + self.ttl))
+        let to_insert = InternalEntry::new(value, Instant::now() + self.ttl);
+        self.map.insert(key, to_insert)
             .map(|v| v.value)
     }
 
