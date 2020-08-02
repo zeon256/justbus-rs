@@ -53,7 +53,6 @@ pub async fn get_timings(
     let bus_stop = bus_stop.into_inner();
     let lru_r = lru.upgradable_read();
     let in_lru = lru_r.get(bus_stop);
-    let mut lru_w = RwLockUpgradableReadGuard::upgrade(lru_r);
 
     let res = match in_lru {
         Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
@@ -62,7 +61,7 @@ pub async fn get_timings(
                 .await
                 .map_err(JustBusError::ClientError)?
                 .services;
-
+            let mut lru_w = RwLockUpgradableReadGuard::upgrade(lru_r);
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
             lru_w.insert(bus_stop, arrival_str.clone());
 
