@@ -6,6 +6,7 @@ use lta::{prelude::*, r#async::lta_client::LTAClient};
 use std::env::var;
 use std::time::Duration;
 
+mod cache;
 mod errors;
 mod routes;
 
@@ -16,6 +17,7 @@ use cht_time::Cache as ChtCache;
 
 #[cfg(feature = "hashbrown")]
 use hashbrown_time::Cache as HashBrownCache;
+
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;
 
@@ -41,7 +43,9 @@ async fn main() -> std::io::Result<()> {
         let app = app.data(ChtCache::<u32, String>::with_ttl_and_size(ttl, 500));
 
         #[cfg(feature = "hashbrown")]
-        let app = app.data(RwLock::new(HashBrownCache::<u32, String>::with_ttl_and_size(ttl, 500)));
+        let app = app.data(RwLock::new(
+            HashBrownCache::<u32, String>::with_ttl_and_size(ttl, 500),
+        ));
 
         app
     })
