@@ -51,7 +51,7 @@ pub async fn get_timings(
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
     let bus_stop = bus_stop.into_inner();
-    let lru_r = lru.upgradable_read();
+    let lru_r = lru.read();
     let in_lru = lru_r.get(bus_stop);
 
     let res = match in_lru {
@@ -61,7 +61,11 @@ pub async fn get_timings(
                 .await
                 .map_err(JustBusError::ClientError)?
                 .services;
-            let mut lru_w = RwLockUpgradableReadGuard::upgrade(lru_r);
+
+            // drop the lock
+            drop(lru_r);
+
+            let mut lru_w = lru.write();
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
             lru_w.insert(bus_stop, arrival_str.clone());
 
