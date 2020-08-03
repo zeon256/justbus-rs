@@ -57,13 +57,13 @@ pub async fn get_timings(
     let res = match in_lru {
         Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
         None => {
+            // drop the lock
+            drop(lru_r);
+
             let arrivals = get_arrival(&client, bus_stop, None)
                 .await
                 .map_err(JustBusError::ClientError)?
                 .services;
-
-            // drop the lock
-            drop(lru_r);
 
             let mut lru_w = lru.write();
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
