@@ -10,6 +10,9 @@ use cht_time::Cache as ChtCache;
 use hashbrown_time::Cache as HashBrownCache;
 use parking_lot::{RwLock, RwLockUpgradableReadGuard};
 
+#[cfg(feature = "vec")]
+use vec_time::CacheVec;
+
 type JustBusResult = Result<HttpResponse, JustBusError>;
 
 pub async fn dummy() -> &'static str {
@@ -24,6 +27,7 @@ pub async fn get_timings(
 ) -> JustBusResult {
     let bus_stop = bus_stop.into_inner();
     let in_lru = lru.get(bus_stop);
+
     let res = match in_lru {
         Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
         None => {
@@ -70,13 +74,48 @@ pub async fn get_timings(
 
             let mut lru_w = lru.write();
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
-            let insert_res = lru_w
+
+            let data = lru_w
                 .insert(bus_stop, arrival_str)
                 .ok_or(JustBusError::CacheError)?;
 
             HttpResponse::Ok()
                 .content_type("application/json")
-                .body(insert_res)
+                .body(data)
+        }
+    };
+
+    Ok(res)
+}
+
+#[cfg(feature = "vec")]
+pub async fn get_timings(
+    bus_stop: web::Path<u32>,
+    lru: web::Data<RwLock<CacheVec>>,
+    client: web::Data<LTAClient>,
+) -> JustBusResult {
+    let bus_stop = bus_stop.into_inner();
+    let lru_r = lru.read();
+    let in_lru = lru_r.get(bus_stop);
+
+    let res = match in_lru {
+        Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
+        None => {
+            drop(lru_r);
+
+            let arrivals = get_arrival(&client, bus_stop, None)
+                .await
+                .map_err(JustBusError::ClientError)?
+                .services;
+
+            let mut lru_w = lru.write();
+            let arrival_str = serde_json::to_string(&arrivals).unwrap();
+
+            lru_w.insert(bus_stop, &arrival_str);
+
+            HttpResponse::Ok()
+                .content_type("application/json")
+                .body(arrival_str)
         }
     };
 

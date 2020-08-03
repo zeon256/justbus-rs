@@ -29,17 +29,7 @@ mod test {
             .collect::<Vec<_>>();
 
         dbg!(&bus_stop_code);
-        dbg!(bus_stop_code.len());
+        dbg!(&bus_stop_code.len());
+        dbg!(&bus_stop_code.iter().max());
     }
 }
-
-// #[cfg(feature = "hashbrown")]
-// fn generate_hash_map() -> HashBrownCache<u32, String> {
-//     let duration = Duration::from_secs(15);
-//     let sz = 5043;
-//     let mut hm = HashBrownCache::with_ttl_and_size(duration, sz);
-//     for string in 0..sz {
-//         hm.insert()
-//     }
-//     hm
-// }
