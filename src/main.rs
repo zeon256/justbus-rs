@@ -6,7 +6,6 @@ use lta::{prelude::*, r#async::lta_client::LTAClient};
 use std::env::var;
 use std::time::Duration;
 
-mod cache;
 mod errors;
 mod routes;
 
@@ -22,6 +21,9 @@ use parking_lot::RwLock;
 
 #[cfg(feature = "vec")]
 use vec_time::CacheVec;
+
+#[cfg(feature = "hashbrown-prealloc")]
+use hashbrown_prealloc_time::CachePreAlloc;
 
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
@@ -51,6 +53,9 @@ async fn main() -> std::io::Result<()> {
 
         #[cfg(feature = "vec")]
         let app = app.data(RwLock::new(CacheVec::with_ttl(ttl)));
+
+        #[cfg(feature = "hashbrown-prealloc")]
+        let app = app.data(RwLock::new(CachePreAlloc::with_ttl(ttl)));
 
         app
     })
