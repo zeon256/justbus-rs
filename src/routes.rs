@@ -34,10 +34,13 @@ pub async fn get_timings(
 
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
 
-            lru.insert(bus_stop, arrival_str.clone());
+            let data = lru
+                .insert(bus_stop, arrival_str)
+                .ok_or(JustBusError::CacheError)?;
+
             HttpResponse::Ok()
                 .content_type("application/json")
-                .body(arrival_str)
+                .body(data)
         }
     };
 
