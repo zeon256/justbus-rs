@@ -67,11 +67,11 @@ pub async fn get_timings(
 
             let mut lru_w = lru.write();
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
-            lru_w.insert(bus_stop, arrival_str.clone());
+            let insert_res = lru_w.insert(bus_stop, arrival_str).unwrap();
 
             HttpResponse::Ok()
                 .content_type("application/json")
-                .body(arrival_str)
+                .body(insert_res)
         }
     };
 
