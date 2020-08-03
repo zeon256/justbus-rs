@@ -4,6 +4,7 @@ use std::fmt::Formatter;
 #[derive(Debug)]
 pub enum JustBusError {
     ClientError(lta::utils::LTAError),
+    CacheError,
 }
 
 impl std::fmt::Display for JustBusError {

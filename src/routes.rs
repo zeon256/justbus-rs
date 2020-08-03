@@ -67,7 +67,9 @@ pub async fn get_timings(
 
             let mut lru_w = lru.write();
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
-            let insert_res = lru_w.insert(bus_stop, arrival_str).unwrap();
+            let insert_res = lru_w
+                .insert(bus_stop, arrival_str)
+                .ok_or(JustBusError::CacheError)?;
 
             HttpResponse::Ok()
                 .content_type("application/json")
