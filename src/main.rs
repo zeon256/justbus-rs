@@ -19,12 +19,6 @@ use hashbrown_time::Cache as HashBrownCache;
 
 use parking_lot::RwLock;
 
-#[cfg(feature = "vec")]
-use vec_time::CacheVec;
-
-#[cfg(feature = "hashbrown-prealloc")]
-use hashbrown_prealloc_time::CachePreAlloc;
-
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -50,12 +44,6 @@ async fn main() -> std::io::Result<()> {
         let app = app.data(RwLock::new(
             HashBrownCache::<u32, String>::with_ttl_and_size(ttl, 500),
         ));
-
-        #[cfg(feature = "vec")]
-        let app = app.data(RwLock::new(CacheVec::with_ttl(ttl)));
-
-        #[cfg(feature = "hashbrown-prealloc")]
-        let app = app.data(RwLock::new(CachePreAlloc::with_ttl(ttl)));
 
         app
     })
