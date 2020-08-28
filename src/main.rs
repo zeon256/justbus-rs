@@ -25,8 +25,8 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    let server_ip_and_port = var("IP_ADDR").unwrap_or("127.0.0.1:8080".to_string());
-    println!("Starting server @ {}", &server_ip_and_port);
+    let ip_and_port = var("IP_ADDR").unwrap_or("127.0.0.1:8080".to_string());
+    println!("Starting server @ {}", &ip_and_port);
 
     let api_key = var("API_KEY").expect("API_KEY NOT FOUND!");
     let ttl = Duration::from_secs(15);
@@ -47,7 +47,7 @@ async fn main() -> std::io::Result<()> {
 
         app
     })
-    .bind(server_ip_and_port)?
+    .bind(ip_and_port)?
     .run()
     .await
 }
