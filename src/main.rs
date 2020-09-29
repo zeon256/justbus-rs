@@ -3,8 +3,8 @@ extern crate jemallocator;
 
 use actix_web::{web, App, HttpServer};
 use lta::{prelude::*, r#async::lta_client::LTAClient};
-use std::env::var;
 use std::time::Duration;
+use std::{env, io};
 
 mod errors;
 mod routes;
@@ -25,11 +25,11 @@ use parking_lot::RwLock;
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    let ip_and_port = var("IP_ADDR").unwrap_or("127.0.0.1:8080".to_string());
+async fn main() -> io::Result<()> {
+    let ip_and_port = env::var("IP_ADDR").unwrap_or("127.0.0.1:8080".to_string());
     println!("Starting server @ {}", &ip_and_port);
 
-    let api_key = var("API_KEY").expect("API_KEY NOT FOUND!");
+    let api_key = env::var("API_KEY").expect("API_KEY NOT FOUND!");
     let ttl = Duration::from_secs(15);
     let client = LTAClient::with_api_key(api_key);
     HttpServer::new(move || {
