@@ -1,6 +1,6 @@
 [package]
 name = "justbus-rs"
-version = "0.1.0"
+version = "0.3.0"
 authors = ["Budi Syahiddin <budisyahiddin@gmail.com>"]
 edition = "2018"
 
@@ -8,13 +8,13 @@ edition = "2018"
 
 [dependencies]
 lta = { version = "0.4.0", features = ["async"] }
-actix-web = "2.0.0"
+actix-web = "3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 actix-rt = "1.0.0"
 cht-time = { path = "./cht", optional = true }
 hashbrown-time = { path = "./hashbrown", optional = true }
-parking_lot = { version = "0.11.0", features = ["nightly"]}
+parking_lot = { version = "0.11.0"}
 
 [target.'cfg(not(target_env = "msvc"))'.dependencies]
 jemallocator = "0.3.2"

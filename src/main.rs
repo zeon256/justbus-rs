@@ -24,7 +24,7 @@ use parking_lot::RwLock;
 #[global_allocator]
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let ip_and_port = var("IP_ADDR").unwrap_or("127.0.0.1:8080".to_string());
     println!("Starting server @ {}", &ip_and_port);

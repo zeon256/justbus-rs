@@ -10,7 +10,7 @@ use cht_time::Cache as ChtCache;
 use hashbrown_time::Cache as HashBrownCache;
 
 #[cfg(feature = "hashbrown")]
-use parking_lot::{RwLock, RwLockUpgradableReadGuard};
+use parking_lot::RwLock;
 
 type JustBusResult = Result<HttpResponse, JustBusError>;
 
