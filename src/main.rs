@@ -17,6 +17,8 @@ use cht_time::Cache as ChtCache;
 #[cfg(feature = "hashbrown")]
 use hashbrown_time::Cache as HashBrownCache;
 
+use dashmap::DashMap;
+use internal_entry::InternalEntry;
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;
 
@@ -24,13 +26,14 @@ use parking_lot::RwLock;
 #[global_allocator]
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
+pub const TTL: Duration = Duration::from_secs(15);
+
 #[actix_web::main]
 async fn main() -> io::Result<()> {
     let ip_and_port = env::var("IP_ADDR").unwrap_or("127.0.0.1:8080".to_string());
     println!("Starting server @ {}", &ip_and_port);
 
     let api_key = env::var("API_KEY").expect("API_KEY NOT FOUND!");
-    let ttl = Duration::from_secs(15);
     let client = LTAClient::with_api_key(api_key);
     HttpServer::new(move || {
         let app = App::new()
@@ -39,12 +42,15 @@ async fn main() -> io::Result<()> {
             .data(client.clone());
 
         #[cfg(feature = "cht")]
-        let app = app.data(ChtCache::<u32, String>::with_ttl_and_size(ttl, 500));
+        let app = app.data(ChtCache::<u32, String>::with_ttl_and_size(TTL, 500));
 
         #[cfg(feature = "hashbrown")]
         let app = app.data(RwLock::new(
-            HashBrownCache::<u32, String>::with_ttl_and_size(ttl, 500),
+            HashBrownCache::<u32, String>::with_ttl_and_size(TTL, 500),
         ));
+
+        #[cfg(feature = "dashmap_cache")]
+        let app = app.data(DashMap::<u32, InternalEntry<String>>::with_capacity(500));
 
         app
     })
