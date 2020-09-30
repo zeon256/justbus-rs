@@ -20,6 +20,9 @@ use hashbrown_time::Cache as HashBrownCache;
 #[cfg(feature = "dashmap_cache")]
 use dashmap::DashMap;
 
+#[cfg(feature = "dashmap")]
+use dashmap_time::Cache;
+
 use internal_entry::InternalEntry;
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;
@@ -51,8 +54,8 @@ async fn main() -> io::Result<()> {
             HashBrownCache::<u32, String>::with_ttl_and_size(TTL, 500),
         ));
 
-        #[cfg(feature = "dashmap_cache")]
-        let app = app.data(DashMap::<u32, InternalEntry<String>>::with_capacity(500));
+        #[cfg(feature = "dashmap")]
+        let app = app.data(Cache::<u32, String>::with_ttl_and_size(TTL, 500));
 
         app
     })

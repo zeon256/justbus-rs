@@ -9,12 +9,13 @@ use cht_time::Cache as ChtCache;
 #[cfg(feature = "hashbrown")]
 use hashbrown_time::Cache as HashBrownCache;
 
+#[cfg(feature = "dashmap")]
+use dashmap_time::Cache;
+
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;
 
 use crate::TTL;
-#[cfg(feature = "dashmap_cache")]
-use dashmap::DashMap;
 use internal_entry::InternalEntry;
 use std::time::Instant;
 
@@ -88,20 +89,15 @@ pub async fn get_timings(
     Ok(res)
 }
 
-#[cfg(feature = "dashmap_cache")]
+#[cfg(feature = "dashmap")]
 pub async fn get_timings(
     bus_stop: web::Path<u32>,
-    lru: web::Data<DashMap<u32, InternalEntry<String>>>,
+    lru: web::Data<Cache<u32, String>>,
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
     let bus_stop = bus_stop.into_inner();
 
-    // checks whether its in the lru or expired
-    // this technically should be done within a struct that holds an internal
-    // dashmap. However, I am not too sure how to handle the lifetime issues so its there now
-    let in_lru = lru
-        .get(&bus_stop)
-        .and_then(|v| if !v.is_expired() { Some(v) } else { None });
+    let in_lru = lru.get(bus_stop);
 
     let res = match in_lru {
         Some(f) => HttpResponse::Ok()
@@ -114,7 +110,7 @@ pub async fn get_timings(
                 .services;
 
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
-            let data = lru.insert(bus_stop, InternalEntry::ttl(arrival_str.clone(), TTL));
+            let data = lru.insert(bus_stop, arrival_str.clone());
 
             HttpResponse::Ok()
                 .content_type("application/json")
