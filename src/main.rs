@@ -17,7 +17,9 @@ use cht_time::Cache as ChtCache;
 #[cfg(feature = "hashbrown")]
 use hashbrown_time::Cache as HashBrownCache;
 
+#[cfg(feature = "dashmap_cache")]
 use dashmap::DashMap;
+
 use internal_entry::InternalEntry;
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;

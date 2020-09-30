@@ -42,14 +42,11 @@ pub async fn get_timings(
                 .services;
 
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
-
-            let data = lru
-                .insert(bus_stop, arrival_str)
-                .ok_or(JustBusError::CacheError)?;
+            let _ = lru.insert(bus_stop, arrival_str.clone());
 
             HttpResponse::Ok()
                 .content_type("application/json")
-                .body(data)
+                .body(arrival_str)
         }
     };
 
@@ -80,13 +77,11 @@ pub async fn get_timings(
             let mut lru_w = lru.write();
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
 
-            let data = lru_w
-                .insert(bus_stop, arrival_str)
-                .ok_or(JustBusError::CacheError)?;
+            let _ = lru_w.insert(bus_stop, arrival_str.clone());
 
             HttpResponse::Ok()
                 .content_type("application/json")
-                .body(data)
+                .body(arrival_str)
         }
     };
 
@@ -106,7 +101,7 @@ pub async fn get_timings(
     // dashmap. However, I am not too sure how to handle the lifetime issues so its there now
     let in_lru = lru
         .get(&bus_stop)
-        .and_then(|v| if v.is_expired() { Some(v) } else { None });
+        .and_then(|v| if !v.is_expired() { Some(v) } else { None });
 
     let res = match in_lru {
         Some(f) => HttpResponse::Ok()
@@ -118,17 +113,12 @@ pub async fn get_timings(
                 .map_err(JustBusError::ClientError)?
                 .services;
 
-            dbg!("Calling server!");
-
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
-
-            let data = lru
-                .insert(bus_stop, InternalEntry::ttl(arrival_str, TTL))
-                .ok_or(JustBusError::CacheError)?;
+            let data = lru.insert(bus_stop, InternalEntry::ttl(arrival_str.clone(), TTL));
 
             HttpResponse::Ok()
                 .content_type("application/json")
-                .body(data.value)
+                .body(arrival_str)
         }
     };
 
