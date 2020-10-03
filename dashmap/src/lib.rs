@@ -1,5 +1,5 @@
 use dashmap::{mapref::one::Ref, DashMap};
-use internal_entry::InternalEntry;
+use justbus_utils::InternalEntry;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::time::{Duration, Instant};
@@ -37,7 +37,7 @@ impl<K: Hash + Eq, V: Debug> Cache<K, V> {
         self.map.insert(key, to_insert).map(|v| v.value)
     }
 
-    pub fn get(&self, key: K) -> Option<Ref<K, InternalEntry<V>>> {
+    pub fn get(&self, key: &K) -> Option<Ref<K, InternalEntry<V>>> {
         self.map
             .get(&key)
             .and_then(|f| if !f.is_expired() { Some(f) } else { None })

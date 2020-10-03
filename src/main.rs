@@ -23,7 +23,7 @@ use dashmap::DashMap;
 #[cfg(feature = "dashmap")]
 use dashmap_time::Cache;
 
-use internal_entry::InternalEntry;
+use justbus_utils::InternalEntry;
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;
 

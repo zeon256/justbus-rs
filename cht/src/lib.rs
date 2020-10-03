@@ -79,7 +79,7 @@ impl<K: Hash + Eq, V: Clone> Cache<K, V> {
             .map(|f| f.value)
     }
 
-    pub fn get(&self, key: K) -> Option<V> {
-        self.map.get(&key).and_then(|f| f.get())
+    pub fn get(&self, key: &K) -> Option<V> {
+        self.map.get(key).and_then(|f| f.get())
     }
 }

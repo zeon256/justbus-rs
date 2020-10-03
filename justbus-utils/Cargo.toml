@@ -1,5 +1,5 @@
 [package]
-name = "internal_entry"
+name = "justbus-utils"
 version = "0.1.0"
 authors = ["BudiNverse <me@inve.rs>"]
 edition = "2018"

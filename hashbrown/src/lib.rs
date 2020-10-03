@@ -1,4 +1,4 @@
-use internal_entry::InternalEntry;
+use justbus_utils::InternalEntry;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
