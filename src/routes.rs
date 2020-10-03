@@ -18,6 +18,9 @@ use dashmap_time::Cache as DashCache;
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;
 
+#[cfg(feature = "logging")]
+use log::info;
+
 type JustBusResult = Result<HttpResponse, JustBusError>;
 
 pub async fn dummy() -> &'static str {
@@ -36,6 +39,9 @@ pub async fn get_timings(
     let res = match in_lru {
         Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
         None => {
+            #[cfg(feature = "logging")]
+            info!("Cache expired! Fetching from LTA servers.");
+
             let arrivals = get_arrival(&client, bus_stop, None)
                 .await
                 .map_err(JustBusError::ClientError)?
@@ -66,6 +72,8 @@ pub async fn get_timings(
     let res = match in_lru {
         Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
         None => {
+            #[cfg(feature = "logging")]
+            info!("Cache expired! Fetching from LTA servers.");
             // drop the lock
             drop(lru_r);
 
@@ -95,7 +103,6 @@ pub async fn get_timings(
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
     let bus_stop = bus_stop.into_inner();
-
     let in_lru = lru.get(&bus_stop);
 
     let res = match in_lru {
@@ -103,6 +110,9 @@ pub async fn get_timings(
             .content_type("application/json")
             .body(&f.value),
         None => {
+            #[cfg(feature = "logging")]
+            info!("Cache expired! Fetching from LTA servers.");
+
             let arrivals = get_arrival(&client, bus_stop, None)
                 .await
                 .map_err(JustBusError::ClientError)?
