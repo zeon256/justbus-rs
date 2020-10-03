@@ -152,9 +152,18 @@ Click to show API response
 
 </details>
 
+## Feature flags
+The following features can be activated during compile time. By `default`, the implementation uses Rust's std lib Hashmap (ie Google Swisstable) and 
+does not contain tls.
+- [dashmap](https://github.com/xacrimon/dashmap)
+- [cht](https://github.com/Gregory-Meyer/cht)
+- tls (using Rustls)
+- logging 
+- nightly (To be paired with `default`, enables hardware lock elision for `RwLock`)
+
 ## Optimisations (in order of impact)
-- caching response with a lock-free hashmap
-- caching only serialised data (ie `String`) to prevent tranforming struct to json response for every request
+- caching response with a hashmap
+- caching only serialised data (ie `String`) to prevent transforming struct to json response for every request
 - `jemalloc`
 
 ## Performance
@@ -193,7 +202,11 @@ Transfer/sec:     29.46MB
 ## How to build
 Requirements: `jemalloc` and `libssl`
 ```
-cargo build --release
+# Lets say we want to use dashmap, logging and tls
+cargo build --release --features tls,logging,dashmap
+
+# How about default and nightly
+cargo build --release --features nightly
 ```
 
 ## How to run
@@ -207,6 +220,9 @@ cargo run --release
 docker pull inverse/justbus_rs
 docker run -d -p 8080:8080 -e API_KEY=YOUR_API_KEY -e IP_ADDR='0.0.0.0:8080' inverse/justbus_rs
 ```
+
+## Contributors
+I would like to thank the following contributors for helping me out with this project!
 
 ## License
 justbus-rs is licensed under MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
