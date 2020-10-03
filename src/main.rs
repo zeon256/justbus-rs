@@ -27,6 +27,9 @@ use justbus_utils::InternalEntry;
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;
 
+#[cfg(feature = "logging")]
+use actix_web::middleware::Logger;
+
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -35,8 +38,13 @@ pub const TTL: Duration = Duration::from_secs(15);
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
+    #[cfg(feature = "logging")]
+    env::set_var("RUST_LOG", "info, error");
+
+    #[cfg(feature = "logging")]
+    env_logger::init();
+
     let ip_and_port = env::var("IP_ADDR").unwrap_or("127.0.0.1:8080".to_string());
-    println!("Starting server @ {}", &ip_and_port);
 
     let api_key = env::var("API_KEY").expect("API_KEY NOT FOUND!");
     let client = LTAClient::with_api_key(api_key);
@@ -56,6 +64,11 @@ async fn main() -> io::Result<()> {
 
         #[cfg(feature = "dashmap")]
         let app = app.data(Cache::<u32, String>::with_ttl_and_size(TTL, 500));
+
+        #[cfg(feature = "logging")]
+        let app = app
+            .wrap(Logger::default())
+            .wrap(Logger::new("%a %{User-Agent}i"));
 
         app
     })
