@@ -222,7 +222,7 @@ docker run -d -p 8080:8080 -e API_KEY=YOUR_API_KEY -e IP_ADDR='0.0.0.0:8080' inv
 ```
 
 ## Contributors
-I would like to thank the following contributors for helping me out with this project!
+Do send a PR if you think you have improvements to make whether to the actual codebase or any of the documentation!
 
 ## License
 justbus-rs is licensed under MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
