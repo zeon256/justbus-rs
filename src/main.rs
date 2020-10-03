@@ -3,25 +3,24 @@ extern crate jemallocator;
 
 use actix_web::{web, App, HttpServer};
 use lta::{prelude::*, r#async::lta_client::LTAClient};
-use std::time::Duration;
-use std::{env, io};
+use std::{env, io, time::Duration};
 
 mod errors;
 mod routes;
 
-use crate::routes::{dummy, get_timings};
+use crate::routes::{get_timings, health};
 
 #[cfg(feature = "cht")]
 use cht_time::Cache as ChtCache;
 
-#[cfg(feature = "hashbrown")]
-use hashbrown_time::Cache as HashBrownCache;
+#[cfg(feature = "swisstable")]
+use hashbrown_time::Cache as SwissCache;
+
+#[cfg(feature = "swisstable")]
+use parking_lot::RwLock;
 
 #[cfg(feature = "dashmap")]
 use dashmap_time::Cache;
-
-#[cfg(feature = "hashbrown")]
-use parking_lot::RwLock;
 
 #[cfg(feature = "logging")]
 use actix_web::middleware::Logger;
@@ -68,17 +67,17 @@ async fn main() -> io::Result<()> {
     let client = LTAClient::with_api_key(api_key);
     let server = HttpServer::new(move || {
         let app = App::new()
-            .route("/api/v1/dummy", web::get().to(dummy))
+            .route("/api/v1/dummy", web::get().to(health))
             .route("/api/v1/timings/{bus_stop}", web::get().to(get_timings))
             .data(client.clone());
 
         #[cfg(feature = "cht")]
         let app = app.data(ChtCache::<u32, String>::with_ttl_and_size(TTL, SZ));
 
-        #[cfg(feature = "hashbrown")]
-        let app = app.data(RwLock::new(
-            HashBrownCache::<u32, String>::with_ttl_and_size(TTL, SZ),
-        ));
+        #[cfg(feature = "swisstable")]
+        let app = app.data(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
+            TTL, SZ,
+        )));
 
         #[cfg(feature = "dashmap")]
         let app = app.data(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
@@ -92,10 +91,10 @@ async fn main() -> io::Result<()> {
     });
 
     #[cfg(feature = "tls")]
-    let config = load_ssl_keys();
-
-    #[cfg(feature = "tls")]
-    let res = server.bind_rustls(ip_and_port, config)?.run().await;
+    let res = {
+        let config = load_ssl_keys();
+        server.bind_rustls(ip_and_port, config)?.run().await
+    };
 
     #[cfg(not(feature = "tls"))]
     let res = server.bind(ip_and_port)?.run().await;

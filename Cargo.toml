@@ -24,9 +24,9 @@ rustls = { version = "0.18", optional = true }
 jemallocator = "0.3.2"
 
 [features]
-default = []
+default = ["swisstable"]
 cht = ["cht-time"]
-hashbrown = ["hashbrown-time", "parking_lot"]
+swisstable = ["hashbrown-time", "parking_lot"]
 nightly = ["parking_lot/nightly"]
 dashmap = ["dashmap-time"]
 tls = ["actix-web/rustls", "rustls"]

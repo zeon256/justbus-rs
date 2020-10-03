@@ -9,35 +9,42 @@ use lta::r#async::lta_client::LTAClient;
 #[cfg(feature = "cht")]
 use cht_time::Cache as ChtCache;
 
-#[cfg(feature = "hashbrown")]
-use hashbrown_time::Cache as HashBrownCache;
+#[cfg(feature = "swisstable")]
+use hashbrown_time::Cache as SwissCache;
+
+#[cfg(feature = "swisstable")]
+use parking_lot::RwLock;
 
 #[cfg(feature = "dashmap")]
 use dashmap_time::Cache as DashCache;
-
-#[cfg(feature = "hashbrown")]
-use parking_lot::RwLock;
 
 #[cfg(feature = "logging")]
 use log::info;
 
 type JustBusResult = Result<HttpResponse, JustBusError>;
 
-pub async fn dummy() -> &'static str {
+pub async fn health() -> &'static str {
     "hello_world"
 }
 
-#[cfg(feature = "cht")]
+#[cfg(any(feature = "cht", feature = "dashmap"))]
 pub async fn get_timings(
     bus_stop: web::Path<u32>,
-    lru: web::Data<ChtCache<u32, String>>,
+    #[cfg(feature = "cht")] lru: web::Data<ChtCache<u32, String>>,
+    #[cfg(feature = "dashmap")] lru: web::Data<DashCache<u32, String>>,
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
     let bus_stop = bus_stop.into_inner();
     let in_lru = lru.get(&bus_stop);
 
     let res = match in_lru {
-        Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
+        #[rustfmt::skip]
+        Some(f) => {
+            let rb = HttpResponse::Ok().content_type("application/json");
+            #[cfg(feature = "dashmap")] let response = rb.body(&f.value);
+            #[cfg(feature = "cht")] let response = rb.body(f);
+            response
+        }
         None => {
             #[cfg(feature = "logging")]
             info!("Cache expired! Fetching from LTA servers.");
@@ -48,7 +55,7 @@ pub async fn get_timings(
                 .services;
 
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
-            let _ = lru.insert(bus_stop, arrival_str.clone());
+            lru.insert(bus_stop, arrival_str.clone());
 
             HttpResponse::Ok()
                 .content_type("application/json")
@@ -59,10 +66,11 @@ pub async fn get_timings(
     Ok(res)
 }
 
-#[cfg(feature = "hashbrown")]
+/// Swisstable implementation is left separate as it gets really hard to read if its added to the function above
+#[cfg(feature = "swisstable")]
 pub async fn get_timings(
     bus_stop: web::Path<u32>,
-    lru: web::Data<RwLock<HashBrownCache<u32, String>>>,
+    lru: web::Data<RwLock<SwissCache<u32, String>>>,
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
     let bus_stop = bus_stop.into_inner();
@@ -86,40 +94,6 @@ pub async fn get_timings(
             let arrival_str = serde_json::to_string(&arrivals).unwrap();
 
             let _ = lru_w.insert(bus_stop, arrival_str.clone());
-
-            HttpResponse::Ok()
-                .content_type("application/json")
-                .body(arrival_str)
-        }
-    };
-
-    Ok(res)
-}
-
-#[cfg(feature = "dashmap")]
-pub async fn get_timings(
-    bus_stop: web::Path<u32>,
-    lru: web::Data<DashCache<u32, String>>,
-    client: web::Data<LTAClient>,
-) -> JustBusResult {
-    let bus_stop = bus_stop.into_inner();
-    let in_lru = lru.get(&bus_stop);
-
-    let res = match in_lru {
-        Some(f) => HttpResponse::Ok()
-            .content_type("application/json")
-            .body(&f.value),
-        None => {
-            #[cfg(feature = "logging")]
-            info!("Cache expired! Fetching from LTA servers.");
-
-            let arrivals = get_arrival(&client, bus_stop, None)
-                .await
-                .map_err(JustBusError::ClientError)?
-                .services;
-
-            let arrival_str = serde_json::to_string(&arrivals).unwrap();
-            let _ = lru.insert(bus_stop, arrival_str.clone());
 
             HttpResponse::Ok()
                 .content_type("application/json")
