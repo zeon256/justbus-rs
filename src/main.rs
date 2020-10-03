@@ -67,7 +67,7 @@ async fn main() -> io::Result<()> {
     let client = LTAClient::with_api_key(api_key);
     let server = HttpServer::new(move || {
         let app = App::new()
-            .route("/api/v1/dummy", web::get().to(health))
+            .route("/api/v1/health", web::get().to(health))
             .route("/api/v1/timings/{bus_stop}", web::get().to(get_timings))
             .data(client.clone());
 
