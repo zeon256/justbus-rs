@@ -29,7 +29,6 @@ hashbrown = ["hashbrown-time", "parking_lot"]
 nightly = ["parking_lot/nightly"]
 dashmap = ["dashmap-time"]
 openssl = []
-rustls = []
 logging = ["env_logger", "log"]
 
 [workspace]
