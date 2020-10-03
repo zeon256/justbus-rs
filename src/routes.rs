@@ -18,13 +18,6 @@ use dashmap_time::Cache as DashCache;
 #[cfg(feature = "hashbrown")]
 use parking_lot::RwLock;
 
-use crate::TTL;
-use actix_web::body::Body;
-use justbus_utils::InternalEntry;
-use serde::export::fmt::Debug;
-use std::hash::Hash;
-use std::time::Instant;
-
 type JustBusResult = Result<HttpResponse, JustBusError>;
 
 pub async fn dummy() -> &'static str {
