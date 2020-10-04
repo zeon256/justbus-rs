@@ -56,10 +56,10 @@ fn load_ssl_keys() -> ServerConfig {
 #[actix_web::main]
 async fn main() -> io::Result<()> {
     #[cfg(feature = "logging")]
-    env::set_var("RUST_LOG", "info, error");
-
-    #[cfg(feature = "logging")]
-    env_logger::init();
+    {
+        env::set_var("RUST_LOG", "info, error");
+        env_logger::init();
+    }
 
     let ip_and_port = env::var("IP_ADDR").unwrap_or_else(|_| "127.0.0.1:8080".to_string());
 

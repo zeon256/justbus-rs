@@ -24,7 +24,7 @@ rustls = { version = "0.18", optional = true }
 jemallocator = "0.3.2"
 
 [features]
-default = ["swisstable"]
+default = ["swisstable", "logging"]
 cht = ["cht-time"]
 swisstable = ["hashbrown-time", "parking_lot"]
 nightly = ["parking_lot/nightly"]
