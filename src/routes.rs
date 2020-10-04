@@ -47,7 +47,10 @@ pub async fn get_timings(
         }
         None => {
             #[cfg(feature = "logging")]
-            info!("Cache expired! Fetching from LTA servers.");
+            info!(
+                "Cache expired for bus_stop_id: {}! Fetching from LTA servers.",
+                bus_stop
+            );
 
             let arrivals = get_arrival(&client, bus_stop, None)
                 .await
@@ -81,7 +84,10 @@ pub async fn get_timings(
         Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
         None => {
             #[cfg(feature = "logging")]
-            info!("Cache expired! Fetching from LTA servers.");
+            info!(
+                "Cache expired for bus_stop_id: {}! Fetching from LTA servers.",
+                bus_stop
+            );
             // drop the lock
             drop(lru_r);
 
