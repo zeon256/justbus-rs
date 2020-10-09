@@ -11,7 +11,7 @@ mod routes;
 use crate::routes::{get_timings, health};
 
 #[cfg(feature = "cht")]
-use cht_time::Cache as ChtCache;
+use cht_time::Cache;
 
 #[cfg(feature = "swisstable")]
 use hashbrown_time::Cache as SwissCache;
@@ -71,16 +71,13 @@ async fn main() -> io::Result<()> {
             .route("/api/v1/timings/{bus_stop}", web::get().to(get_timings))
             .data(client.clone());
 
-        #[cfg(feature = "cht")]
-        let app = app.data(ChtCache::<u32, String>::with_ttl_and_size(TTL, SZ));
+        #[cfg(any(feature = "cht", feature = "dashmap"))]
+        let app = app.data(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
 
         #[cfg(feature = "swisstable")]
         let app = app.data(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
             TTL, SZ,
         )));
-
-        #[cfg(feature = "dashmap")]
-        let app = app.data(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
 
         #[cfg(feature = "logging")]
         let app = app

@@ -7,16 +7,16 @@ use lta::r#async::bus::get_arrival;
 use lta::r#async::lta_client::LTAClient;
 
 #[cfg(feature = "cht")]
-use cht_time::Cache as ChtCache;
+use cht_time::Cache;
+
+#[cfg(feature = "dashmap")]
+use dashmap_time::Cache;
 
 #[cfg(feature = "swisstable")]
 use hashbrown_time::Cache as SwissCache;
 
 #[cfg(feature = "swisstable")]
 use parking_lot::RwLock;
-
-#[cfg(feature = "dashmap")]
-use dashmap_time::Cache as DashCache;
 
 #[cfg(feature = "logging")]
 use log::info;
@@ -30,8 +30,7 @@ pub async fn health() -> &'static str {
 #[cfg(any(feature = "cht", feature = "dashmap"))]
 pub async fn get_timings(
     bus_stop: web::Path<u32>,
-    #[cfg(feature = "cht")] lru: web::Data<ChtCache<u32, String>>,
-    #[cfg(feature = "dashmap")] lru: web::Data<DashCache<u32, String>>,
+    lru: web::Data<Cache<u32, String>>,
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
     let bus_stop = bus_stop.into_inner();
@@ -40,9 +39,8 @@ pub async fn get_timings(
     let res = match in_lru {
         #[rustfmt::skip]
         Some(f) => {
-            let rb = HttpResponse::Ok().content_type("application/json");
-            #[cfg(feature = "dashmap")] let response = rb.body(&f.value);
-            #[cfg(feature = "cht")] let response = rb.body(f);
+            #[cfg(feature = "dashmap")] let response = HttpResponse::Ok().content_type("application/json").body(&f.value);
+            #[cfg(feature = "cht")] let response = HttpResponse::Ok().content_type("application/json").body(f);
             response
         }
         None => {
