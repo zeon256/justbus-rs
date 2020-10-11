@@ -169,34 +169,24 @@ does not contain tls.
 ## Performance
 Disclaimer: benchmarks are naive and YMMV
 
-i7 3770k @ 4.4Ghz 16G ram @ 2200Mhz, ubuntu 18.04 LTS  `wrk`
+AMD Ryzen 3600 @ 4.3Ghz (stock) 16G ram @ 3600Mhz, ubuntu 20.04 LTS  `wrk`
 ```
-./wrk -c100 -d15s -t4 http://localhost:8080/api/v1/timings/83139 
-```
-```
-zeon@zeon-desktop  ~  wrk -c100 -d15s -t4 http://localhost:8080/api/v1/timings/83139
-Running 15s test @ http://localhost:8080/api/v1/timings/83139
-  4 threads and 100 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     4.10ms   27.83ms 839.99ms   99.60%
-    Req/Sec    64.04k    17.90k   89.25k    46.88%
-  3812462 requests in 15.09s, 6.37GB read
-  Non-2xx or 3xx responses: 115
-Requests/sec: 252570.08
-Transfer/sec:    431.87MB
+wrk -c100 -d15s -t6 http://localhost:8080/api/v1/timings/83139 
 ```
 
-Hello World benchmark
+### Swisstable **(Recommended)**
 ```
-zeon@zeon-desktop  ~  wrk -c100 -d15s -t4 http://localhost:8080/api/v1/dummy
-Running 15s test @ http://localhost:8080/api/v1/dummy
-  4 threads and 100 connections
+Running 15s test @ http://localhost:8080/api/v1/timings/83139
+  6 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.33ms    2.74ms  38.44ms   89.56%
-    Req/Sec    61.03k    15.00k   92.95k    61.47%
-  3643319 requests in 15.10s, 444.74MB read
-Requests/sec: 241334.14
-Transfer/sec:     29.46MB
+    Latency     1.40ms    4.49ms 109.89ms   92.99%
+    Req/Sec   126.60k    33.29k  172.64k    74.11%
+  11357888 requests in 15.05s, 23.48GB read
+  Non-2xx or 3xx responses: 59
+Requests/sec: 754475.17
+Transfer/sec:      1.56GB
+
+Memory Usage @ Peak: 21MB
 ```
 
 ## How to build
