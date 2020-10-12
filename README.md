@@ -153,13 +153,13 @@ Click to show API response
 </details>
 
 ## Feature flags
-The following features can be activated during compile time. By `default`, the implementation uses Rust's std lib Hashmap (ie Google Swisstable) and 
-does not contain tls.
-- [dashmap](https://github.com/xacrimon/dashmap)
-- [cht](https://github.com/Gregory-Meyer/cht)
-- tls (using Rustls)
-- logging 
-- nightly (To be paired with `default`, enables hardware lock elision for `RwLock`)
+The following features can be activated during compile time. Program will **NOT** compile if there are no feature flags!
+- `swisstable`
+- [`dashmap`](https://github.com/xacrimon/dashmap)
+- [`cht`](https://github.com/Gregory-Meyer/cht)
+- `tls` (using Rustls)
+- `logging` 
+- `nightly` (To be paired with `swisstable`, enables hardware lock elision for `RwLock`)
 
 ## Optimisations (in order of impact)
 - caching response with a hashmap
@@ -169,7 +169,7 @@ does not contain tls.
 ## Performance
 Disclaimer: benchmarks are naive and YMMV
 
-AMD Ryzen 3600 @ 4.3Ghz (stock) 16G ram @ 3600Mhz, ubuntu 20.04 LTS  `wrk`
+AMD Ryzen 3600 @ 4.3Ghz (stock) 16G ram @ 3600Mhz, ubuntu 20.04 LTS
 ```
 wrk -c100 -d15s -t6 http://localhost:8080/api/v1/timings/83139 
 ```
