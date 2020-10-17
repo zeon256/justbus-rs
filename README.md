@@ -205,6 +205,21 @@ export API_KEY=YOUR_API_KEY
 cargo run --release
 ```
 
+## TLS Guide
+We put the self-signed certificate in this directory as an example but your browser would complain that it isn't secure. So we recommend to use `mkcert` to trust it. To use local CA, you should run:
+```
+mkcert -install
+```
+
+If you want to generate your own cert/private key file, then run:
+```
+mkcert localhost
+openssl rsa -in localhost-key.pem -out key-rsa.pem
+
+# Then run the program normally
+```
+
+
 ## Docker
 ```
 docker pull inverse/justbus_rs
