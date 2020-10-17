@@ -13,7 +13,7 @@
 
 # justbus-rs
 
->justbus-rs is a lightweight backend that serves LTA Datamall bus arrival timings, bus services, bus routes and bus stop data with a strong emphasis on low memory usage, high throughput and latency.
+>justbus-rs is a lightweight backend that serves LTA Datamall bus arrival timings, bus services, bus routes and bus stop data with a strong emphasis on low memory usage, high throughput and low latency.
 This project uses [lta-rs](https://github.com/BudiNverse/lta-rs) internally.
 
 ## Usage
