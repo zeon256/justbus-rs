@@ -190,7 +190,7 @@ Memory Usage @ Peak: 21MB
 ```
 
 ## How to build
-Requirements: `jemalloc` and `libssl`
+Requirements: `jemalloc` and `libssl`. Binary will be at `/target/release` folder.
 ```
 # Lets say we want to use dashmap, logging and tls
 cargo build --release --features tls,logging,dashmap
@@ -202,7 +202,7 @@ cargo build --release --features nightly
 ## How to run
 ```
 export API_KEY=YOUR_API_KEY
-cargo run --release --features swisstable
+./target/release/justbus-rs
 ```
 
 ## TLS Guide
