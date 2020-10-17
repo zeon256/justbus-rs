@@ -23,13 +23,22 @@ use log::info;
 
 type JustBusResult = Result<HttpResponse, JustBusError>;
 
+#[derive(Debug, Hash, PartialOrd, PartialEq, Eq)]
+pub struct BusServicesKey(pub ());
+
+#[derive(Debug, Hash, PartialOrd, PartialEq, Eq)]
+pub struct BusStopKey(pub ());
+
+#[derive(Debug, Hash, PartialOrd, PartialEq, Eq)]
+pub struct BusRouteKey(pub ());
+
 pub async fn health() -> &'static str {
     "hello_world"
 }
 
 #[cfg(any(feature = "cht", feature = "dashmap"))]
 pub async fn bus_stops(
-    lru: web::Data<Cache<u32, String>>,
+    lru: web::Data<Cache<BusStopKey, String>>,
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
     unimplemented!()
@@ -37,7 +46,7 @@ pub async fn bus_stops(
 
 #[cfg(any(feature = "cht", feature = "dashmap"))]
 pub async fn bus_routes(
-    lru: web::Data<Cache<u32, String>>,
+    lru: web::Data<Cache<BusRouteKey, String>>,
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
     unimplemented!()
@@ -46,10 +55,11 @@ pub async fn bus_routes(
 /// Key is 0 as there is no `is_empty` implemented for Cache
 #[cfg(any(feature = "cht", feature = "dashmap"))]
 pub async fn bus_services(
-    lru: web::Data<Cache<u8, String>>,
+    lru: web::Data<Cache<BusServicesKey, String>>,
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
-    let in_lru = lru.get(&0);
+    const KEY: BusServicesKey = BusServicesKey(());
+    let in_lru = lru.get(&KEY);
 
     let res = match in_lru {
         #[rustfmt::skip]
@@ -76,7 +86,7 @@ pub async fn bus_services(
             }
 
             let bus_services_str = serde_json::to_string(&buf).unwrap();
-            lru.insert(0, bus_services_str.clone());
+            lru.insert(BusServicesKey(()), bus_services_str.clone());
 
             HttpResponse::Ok()
                 .content_type("application/json")

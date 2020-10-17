@@ -8,7 +8,7 @@ use std::{env, io, time::Duration};
 mod errors;
 mod routes;
 
-use crate::routes::{bus_arrivals, health};
+use crate::routes::*;
 
 #[cfg(feature = "cht")]
 use cht_time::Cache;
@@ -39,6 +39,7 @@ use rustls::{
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 const TTL: Duration = Duration::from_secs(15);
+const DAY_TTL: Duration = Duration::from_secs(86400);
 const SZ: usize = 500;
 
 #[cfg(feature = "tls")]
@@ -69,10 +70,17 @@ async fn main() -> io::Result<()> {
         let app = App::new()
             .route("/api/v1/health", web::get().to(health))
             .route("/api/v1/timings/{bus_stop}", web::get().to(bus_arrivals))
+            .route("/api/v1/bus_services", web::get().to(bus_services))
             .data(client.clone());
 
         #[cfg(any(feature = "cht", feature = "dashmap"))]
         let app = app.data(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
+
+        // bus_services
+        #[cfg(any(feature = "cht", feature = "dashmap"))]
+        let app = app.data(Cache::<BusServicesKey, String>::with_ttl_and_size(
+            DAY_TTL, SZ,
+        ));
 
         #[cfg(feature = "swisstable")]
         let app = app.data(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
