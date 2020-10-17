@@ -162,8 +162,8 @@ any difference between any of the caching strategies. Like always, you should be
 - `nightly` (To be paired with `swisstable`, enables hardware lock elision for `RwLock`)
 
 ## Optimisations (in order of impact)
-- caching response with a hashmap
-- caching only serialised data (ie `String`) to prevent transforming struct to json response for every request
+- Caching response with a hashmap
+- Amortised serialisation of data structures
 - `jemalloc`
 
 ## Performance
