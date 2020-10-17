@@ -13,10 +13,11 @@
 
 # justbus-rs
 
->justbus-rs is a lightweight backend that serves LTA Datamall bus timings.
+>justbus-rs is a lightweight backend that serves LTA Datamall bus arrival timings, bus services, bus routes and bus stop data with a strong emphasis on low memory usage, high throughput and latency.
 This project uses [lta-rs](https://github.com/BudiNverse/lta-rs) internally.
 
 ## Usage
+Bus Arrival Timings
 ```
 GET http://localhost:8080/api/v1/timings/<bus_stop_no>
 ```
@@ -150,7 +151,9 @@ Click to show API response
 </details>
 
 ## Feature flags
-The following features can be activated during compile time. Program will **NOT** compile if there are no feature flags!
+The following features can be activated during compile time. Program will **NOT** compile if there are no feature flags! Multiple caching strategies are implemented as 
+different machines perform differently with each of them. A lower core machine may benefit more from `cht` and `dashmap` whereas a higher core machine may not see
+any difference between any of the caching strategies. 
 - `swisstable`
 - [`dashmap`](https://github.com/xacrimon/dashmap)
 - [`cht`](https://github.com/Gregory-Meyer/cht)

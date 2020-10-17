@@ -43,7 +43,7 @@ pub async fn bus_routes(
     unimplemented!()
 }
 
-/// Key is "" as there is no `is_empty` implemented for Cache
+/// Key is 0 as there is no `is_empty` implemented for Cache
 #[cfg(any(feature = "cht", feature = "dashmap"))]
 pub async fn bus_services(
     lru: web::Data<Cache<u8, String>>,
