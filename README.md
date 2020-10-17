@@ -153,8 +153,8 @@ Click to show API response
 ## Feature flags
 The following features can be activated during compile time. Program will **NOT** compile if there are no feature flags! Multiple caching strategies are implemented as 
 different machines perform differently with each of them. A lower core machine may benefit more from `cht` and `dashmap` whereas a higher core machine may not see
-any difference between any of the caching strategies. 
-- `swisstable`
+any difference between any of the caching strategies. Like always, you should benchmark them yourself if performance is a concern!
+- `swisstable` (recommended)
 - [`dashmap`](https://github.com/xacrimon/dashmap)
 - [`cht`](https://github.com/Gregory-Meyer/cht)
 - `tls` (using Rustls)
