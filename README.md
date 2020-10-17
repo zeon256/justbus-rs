@@ -202,7 +202,7 @@ cargo build --release --features nightly
 ## How to run
 ```
 export API_KEY=YOUR_API_KEY
-cargo run --release
+cargo run --release --features swisstable
 ```
 
 ## TLS Guide
