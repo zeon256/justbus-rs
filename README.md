@@ -183,7 +183,7 @@ Running 15s test @ http://localhost:8080/api/v1/timings/83139
     Req/Sec   126.60k    33.29k  172.64k    74.11%
   11357888 requests in 15.05s, 23.48GB read
   Non-2xx or 3xx responses: 59
-Requests/sec: 754475.17
+Requests/sec:    754475.17
 Transfer/sec:      1.56GB
 
 Memory Usage @ Peak: 21MB
