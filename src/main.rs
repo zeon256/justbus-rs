@@ -8,7 +8,7 @@ use std::{env, io, time::Duration};
 mod errors;
 mod routes;
 
-use crate::routes::{get_timings, health};
+use crate::routes::{bus_arrivals, health};
 
 #[cfg(feature = "cht")]
 use cht_time::Cache;
@@ -68,7 +68,7 @@ async fn main() -> io::Result<()> {
     let server = HttpServer::new(move || {
         let app = App::new()
             .route("/api/v1/health", web::get().to(health))
-            .route("/api/v1/timings/{bus_stop}", web::get().to(get_timings))
+            .route("/api/v1/timings/{bus_stop}", web::get().to(bus_arrivals))
             .data(client.clone());
 
         #[cfg(any(feature = "cht", feature = "dashmap"))]

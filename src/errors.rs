@@ -1,9 +1,16 @@
 use actix_web::{HttpResponse, ResponseError};
+use lta::utils::LTAError;
 use std::fmt;
 
 #[derive(Debug)]
 pub enum JustBusError {
     ClientError(lta::utils::LTAError),
+}
+
+impl From<lta::utils::LTAError> for JustBusError {
+    fn from(e: LTAError) -> Self {
+        JustBusError::ClientError(e)
+    }
 }
 
 impl fmt::Display for JustBusError {
