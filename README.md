@@ -152,7 +152,7 @@ Click to show API response
 
 ## Feature flags
 The following features can be activated during compile time. Program will **NOT** compile if there are no feature flags! Multiple caching strategies are implemented as 
-different machines perform differently with each of them. A lower core machine may benefit more from `cht` and `dashmap` whereas a higher core machine may not see
+different machines perform differently with each of them. A machine with lesser physical cores may benefit more from `cht` and `dashmap` whereas a higher core machine may not see
 any difference between any of the caching strategies. Like always, you should benchmark them yourself if performance is a concern!
 - `swisstable` (recommended)
 - [`dashmap`](https://github.com/xacrimon/dashmap)
@@ -201,8 +201,11 @@ cargo build --release --features nightly
 
 ## How to run
 ```
-export API_KEY=YOUR_API_KEY
-./target/release/justbus-rs
+cd ./target/release
+./justbus-rs --ip-addr IP_ADDR_YOU_WANT_WITH_PORT --api-key YOUR_API_KEY
+
+# Do note that ip-addr is optional and will default to 127.0.0.1:8080 if nothing is provided
+# api-key is a must
 ```
 
 ## TLS Guide
