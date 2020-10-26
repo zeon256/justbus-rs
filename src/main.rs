@@ -2,6 +2,7 @@
 extern crate jemallocator;
 
 use actix_web::{web, App, HttpServer};
+use argh::FromArgs;
 use lta::{prelude::*, r#async::lta_client::LTAClient};
 use std::{env, io, time::Duration};
 
@@ -57,16 +58,17 @@ fn load_ssl_keys() -> ServerConfig {
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
+    let args: Args = argh::from_env();
+
     #[cfg(feature = "logging")]
     {
         env::set_var("RUST_LOG", "info, error");
         env_logger::init();
     }
 
-    let ip_and_port = env::var("IP_ADDR").unwrap_or_else(|_| "127.0.0.1:8080".to_string());
+    let ip_and_port = args.ip_addr.unwrap_or("127.0.0.1:8080".to_string());
 
-    let api_key = env::var("API_KEY").expect("API_KEY NOT FOUND!");
-    let client = LTAClient::with_api_key(api_key);
+    let client = LTAClient::with_api_key(args.api_key);
     let server = HttpServer::new(move || {
         let app = App::new()
             .route("/api/v1/health", web::get().to(health))
@@ -99,4 +101,16 @@ async fn main() -> io::Result<()> {
     let res = server.bind(ip_and_port)?.run().await;
 
     res
+}
+
+#[derive(FromArgs)]
+/// Lightning fast API for Singapore LTA's bus data arrival timings with emphasis on low memory overhead, high throughput and low latency
+struct Args {
+    /// IP address of server. Defaults to 127.0.0.1:8080 if nothing is provided. eg.0.0.0.0:8080
+    #[argh(option)]
+    ip_addr: Option<String>,
+
+    /// your LTA API key
+    #[argh(option)]
+    api_key: String,
 }
