@@ -7,7 +7,7 @@
         <img src="https://img.shields.io/github/license/BudiNverse/lta-rs"/>
     </a>
     <a href="https://github.com/BudiNverse/lta-rs">
-        <img src="https://img.shields.io/badge/rust-1.3.9-blueviolet.svg"/>
+        <img src="https://img.shields.io/badge/rust-1.4.4-blueviolet.svg"/>
     </a>      
 </p>
 
