@@ -1,15 +1,21 @@
 use actix_web::{HttpResponse, ResponseError};
-use std::fmt::Formatter;
+use lta::utils::LTAError;
+use std::fmt;
 
 #[derive(Debug)]
 pub enum JustBusError {
     ClientError(lta::utils::LTAError),
-    CacheError,
 }
 
-impl std::fmt::Display for JustBusError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Internal Server Error")
+impl From<lta::utils::LTAError> for JustBusError {
+    fn from(e: LTAError) -> Self {
+        JustBusError::ClientError(e)
+    }
+}
+
+impl fmt::Display for JustBusError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Client error! {}", self.to_string())
     }
 }
 

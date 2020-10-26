@@ -2,7 +2,7 @@ FROM rust:latest as builder
 
 WORKDIR /home/rust
 COPY . .
-RUN cargo build --release
+RUN cargo build --release --features swisstable
 ENTRYPOINT ["./target/release/justbus-rs"]
 
 FROM debian:latest

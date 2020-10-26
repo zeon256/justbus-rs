@@ -6,22 +6,20 @@
     <a href="https://github.com/BudiNverse/justbus-rs">
         <img src="https://img.shields.io/github/license/BudiNverse/lta-rs"/>
     </a>
-    <a href="https://dev.azure.com/budisyahiddin/lta-rs/_build?definitionId=7">
-        <img src="https://dev.azure.com/budisyahiddin/lta-rs/_apis/build/status/BudiNverse.justbus-rs?branchName=master">  
-    </a>
     <a href="https://github.com/BudiNverse/lta-rs">
-        <img src="https://img.shields.io/badge/rust-1.3.9-blueviolet.svg"/>
+        <img src="https://img.shields.io/badge/rust-1.4.4-blueviolet.svg"/>
     </a>      
 </p>
 
 # justbus-rs
 
->justbus-rs is a lightweight backend that serves LTA Datamall bus timings.
+>justbus-rs is a lightweight backend that serves LTA Datamall bus arrival timings with a strong emphasis on low memory usage, high throughput and low latency.
 This project uses [lta-rs](https://github.com/BudiNverse/lta-rs) internally.
 
 ## Usage
+Bus Arrival Timings
 ```
-GET http://localhost:8080/api/v1/timings/83139
+GET http://localhost:8080/api/v1/timings/<bus_stop_no>
 ```
 <details>
 <summary>
@@ -152,61 +150,87 @@ Click to show API response
 
 </details>
 
+## Feature flags
+The following features can be activated during compile time. Program will **NOT** compile if there are no feature flags! Multiple caching strategies are implemented as 
+different machines perform differently with each of them. A machine with lesser physical cores may benefit more from `cht` and `dashmap` whereas a higher core machine may not see
+any difference between any of the caching strategies. Like always, you should benchmark them yourself if performance is a concern!
+- `swisstable` (recommended)
+- [`dashmap`](https://github.com/xacrimon/dashmap)
+- [`cht`](https://github.com/Gregory-Meyer/cht)
+- `tls` (using Rustls)
+- `logging` 
+- `nightly` (To be paired with `swisstable`, enables hardware lock elision for `RwLock`)
+
 ## Optimisations (in order of impact)
-- caching response with a lock-free hashmap
-- caching only serialised data (ie `String`) to prevent tranforming struct to json response for every request
+- Caching response with a hashmap
+- Amortised serialisation of data structures
 - `jemalloc`
 
 ## Performance
 Disclaimer: benchmarks are naive and YMMV
 
-i7 3770k @ 4.4Ghz 16G ram @ 2200Mhz, ubuntu 18.04 LTS  `wrk`
+AMD Ryzen 3600 @ 4.3Ghz (stock) 16G ram @ 3600Mhz, ubuntu 20.04 LTS
 ```
-./wrk -c100 -d15s -t4 http://localhost:8080/api/v1/timings/83139 
-```
-```
-zeon@zeon-desktop  ~  wrk -c100 -d15s -t4 http://localhost:8080/api/v1/timings/83139
-Running 15s test @ http://localhost:8080/api/v1/timings/83139
-  4 threads and 100 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     4.10ms   27.83ms 839.99ms   99.60%
-    Req/Sec    64.04k    17.90k   89.25k    46.88%
-  3812462 requests in 15.09s, 6.37GB read
-  Non-2xx or 3xx responses: 115
-Requests/sec: 252570.08
-Transfer/sec:    431.87MB
+wrk -c100 -d15s -t6 http://localhost:8080/api/v1/timings/83139 
 ```
 
-Hello World benchmark
+### Swisstable **(Recommended)**
 ```
-zeon@zeon-desktop  ~  wrk -c100 -d15s -t4 http://localhost:8080/api/v1/dummy
-Running 15s test @ http://localhost:8080/api/v1/dummy
-  4 threads and 100 connections
+Running 15s test @ http://localhost:8080/api/v1/timings/83139
+  6 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.33ms    2.74ms  38.44ms   89.56%
-    Req/Sec    61.03k    15.00k   92.95k    61.47%
-  3643319 requests in 15.10s, 444.74MB read
-Requests/sec: 241334.14
-Transfer/sec:     29.46MB
+    Latency     1.40ms    4.49ms 109.89ms   92.99%
+    Req/Sec   126.60k    33.29k  172.64k    74.11%
+  11357888 requests in 15.05s, 23.48GB read
+  Non-2xx or 3xx responses: 59
+Requests/sec:   754475.17
+Transfer/sec:      1.56GB
+
+Memory Usage @ Peak: 21MB
 ```
 
 ## How to build
-Requirements: `jemalloc` and `libssl`
+Requirements: `jemalloc` and `libssl`. Binary will be at `/target/release` folder.
 ```
-cargo build --release
+# Lets say we want to use dashmap, logging and tls
+cargo build --release --features tls,logging,dashmap
+
+# How about default and nightly
+cargo build --release --features nightly
 ```
 
 ## How to run
 ```
-export API_KEY=YOUR_API_KEY
-cargo run --release
+cd ./target/release
+./justbus-rs --ip-addr IP_ADDR_YOU_WANT_WITH_PORT --api-key YOUR_API_KEY
+
+# Do note that ip-addr is optional and will default to 127.0.0.1:8080 if nothing is provided
+# api-key is a must
 ```
+
+## TLS Guide
+We put the self-signed certificate in this directory as an example but your browser would complain that it isn't secure. So we recommend to use `mkcert` to trust it. To use local CA, you should run:
+```
+mkcert -install
+```
+
+If you want to generate your own cert/private key file, then run:
+```
+mkcert localhost
+openssl rsa -in localhost-key.pem -out key-rsa.pem
+
+# Then run the program normally
+```
+
 
 ## Docker
 ```
 docker pull inverse/justbus_rs
 docker run -d -p 8080:8080 -e API_KEY=YOUR_API_KEY -e IP_ADDR='0.0.0.0:8080' inverse/justbus_rs
 ```
+
+## Contributors
+Do send a PR if you think you have improvements to make whether to the actual codebase or any of the documentation!
 
 ## License
 justbus-rs is licensed under MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)

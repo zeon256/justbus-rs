@@ -1,7 +1,7 @@
+use justbus_utils::InternalEntry;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::marker::PhantomData;
 use std::time::{Duration, Instant};
 
 #[cfg(test)]
@@ -60,30 +60,6 @@ mod test {
         let hm_r = hm.read().unwrap();
         assert_eq!(hm_r.get(32), Some(&"hello_32_replaced"));
         println!("{:?}", hm_r.get(32));
-    }
-}
-
-#[derive(Debug, Clone)]
-struct InternalEntry<V: Debug> {
-    value: V,
-    expiration: Instant,
-}
-
-impl<V: Debug> InternalEntry<V> {
-    pub fn new(value: V, expiration: Instant) -> Self {
-        InternalEntry { value, expiration }
-    }
-
-    fn is_expired(&self) -> bool {
-        Instant::now() > self.expiration
-    }
-
-    pub fn get(&self) -> Option<&V> {
-        if self.is_expired() {
-            None
-        } else {
-            Some(&self.value)
-        }
     }
 }
 
