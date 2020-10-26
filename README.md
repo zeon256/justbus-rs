@@ -6,8 +6,11 @@
     <a href="https://github.com/BudiNverse/justbus-rs">
         <img src="https://img.shields.io/github/license/BudiNverse/lta-rs"/>
     </a>
+    <a href="">
+        <img src="https://img.shields.io/github/workflow/status/BudiNverse/justbus-rs/Rust?logo=github">
+    </a>
     <a href="https://github.com/BudiNverse/lta-rs">
-        <img src="https://img.shields.io/badge/rust-1.4.4-blueviolet.svg"/>
+        <img src="https://img.shields.io/badge/rust-1.4.4-blueviolet.svg?logo=rust"/>
     </a>      
 </p>
 
