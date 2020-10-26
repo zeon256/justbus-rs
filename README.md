@@ -227,9 +227,10 @@ openssl rsa -in localhost-key.pem -out key-rsa.pem
 
 
 ## Docker
+By default, docker image uses `swisstable` feature. If you need the other features, you will need to modify Dockerfile and build your own image.
 ```
 docker pull inverse/justbus_rs
-docker run -d -p 8080:8080 -e API_KEY=YOUR_API_KEY -e IP_ADDR='0.0.0.0:8080' inverse/justbus_rs
+docker run -d -p 8080:8080 inverse/justbus_rs --api-key YOUR_API_KEY --ip-addr 0.0.0.0:8080
 ```
 
 ## Contributors
