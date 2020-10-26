@@ -4,14 +4,6 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::time::{Duration, Instant};
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
-
 pub struct Cache<K: Hash + Eq, V: Debug> {
     map: DashMap<K, InternalEntry<V>>,
     ttl: Duration,
