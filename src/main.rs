@@ -1,10 +1,10 @@
-#[cfg(not(target_env = "msvc"))]
+#[cfg(not(any(target_env = "msvc")))]
 extern crate jemallocator;
 
 use actix_web::{web, App, HttpServer};
 use argh::FromArgs;
-use lta::{prelude::*, r#async::lta_client::LTAClient};
-use std::{env, io, time::Duration};
+use lta::{Client, LTAClient};
+use std::{io, time::Duration};
 
 mod errors;
 mod routes;
@@ -68,7 +68,7 @@ async fn main() -> io::Result<()> {
 
     let ip_and_port = args.ip_addr.unwrap_or("127.0.0.1:8080".to_string());
 
-    let client = LTAClient::with_api_key(args.api_key);
+    let client = LTAClient::with_api_key(args.api_key).unwrap();
     let server = HttpServer::new(move || {
         let app = App::new()
             .route("/api/v1/health", web::get().to(health))
