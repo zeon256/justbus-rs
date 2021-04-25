@@ -62,7 +62,7 @@ async fn main() -> io::Result<()> {
 
     #[cfg(feature = "logging")]
     {
-        env::set_var("RUST_LOG", "info, error");
+        std::env::set_var("RUST_LOG", "info, error");
         env_logger::init();
     }
 
@@ -75,11 +75,14 @@ async fn main() -> io::Result<()> {
             .route("/api/v1/timings/{bus_stop}", web::get().to(bus_arrivals))
             .data(client.clone());
 
+        // thing to note
+        // app.data -> non thread local
+        // app.app_data -> shared across
         #[cfg(any(feature = "cht", feature = "dashmap"))]
-        let app = app.data(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
+        let app = app.app_data(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
 
         #[cfg(feature = "swisstable")]
-        let app = app.data(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
+        let app = app.app_data(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
             TTL, SZ,
         )));
 
