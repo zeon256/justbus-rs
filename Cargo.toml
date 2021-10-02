@@ -1,6 +1,6 @@
 [package]
 name = "justbus-rs"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Budi Syahiddin <me@inve.rs>"]
 edition = "2018"
 
@@ -24,6 +24,9 @@ thiserror = "1.0.29"
 
 [target.'cfg(not(target_env = "msvc"))'.dependencies]
 jemallocator = "0.3.2"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+mimalloc = "0.1.26"
 
 [features]
 default = ["swisstable"]

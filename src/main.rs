@@ -1,6 +1,9 @@
 #[cfg(not(target_env = "msvc"))]
 extern crate jemallocator;
 
+#[cfg(target_os = "windows")]
+use mimalloc::MiMalloc;
+
 use actix_web::{web, App, HttpServer};
 use argh::FromArgs;
 use lta::{Client, LTAClient};
@@ -37,6 +40,10 @@ use rustls::{
     internal::pemfile::{certs, rsa_private_keys},
     NoClientAuth, ServerConfig,
 };
+
+#[cfg(target_os = "windows")]
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
