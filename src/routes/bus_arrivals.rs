@@ -15,7 +15,9 @@ use actix_web::{web, HttpResponse};
 
 #[cfg(feature = "logging")]
 use log::info;
-use lta::r#async::{bus, lta_client::LTAClient};
+
+use lta::Bus;
+use lta::{BusRequests, LTAClient};
 
 #[cfg(any(feature = "cht", feature = "dashmap"))]
 pub async fn bus_arrivals(
@@ -42,7 +44,7 @@ pub async fn bus_arrivals(
                 bus_stop
             );
 
-            let arrivals = bus::get_arrival(&client, bus_stop, None).await?;
+            let arrivals = Bus::get_arrival(&client, bus_stop, None).await?;
 
             let arrival_str = serde_json::to_string(&arrivals.services).unwrap();
             lru.insert(bus_stop, arrival_str.clone());
@@ -79,7 +81,7 @@ pub async fn bus_arrivals(
                 bus_stop
             );
 
-            let arrivals = bus::get_arrival(&client, bus_stop, None).await?;
+            let arrivals = Bus::get_arrival(&client, bus_stop, None).await?;
 
             let mut lru_w = lru.write();
             let arrival_str = serde_json::to_string(&arrivals.services).unwrap();

@@ -1,22 +1,15 @@
 use actix_web::{HttpResponse, ResponseError};
-use lta::utils::LTAError;
-use std::fmt;
+use lta::LTAError;
+use std::io;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum JustBusError {
-    ClientError(lta::utils::LTAError),
-}
+    #[error("Client error: {0}")]
+    ClientError(#[from] LTAError),
 
-impl From<lta::utils::LTAError> for JustBusError {
-    fn from(e: LTAError) -> Self {
-        JustBusError::ClientError(e)
-    }
-}
-
-impl fmt::Display for JustBusError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Client error! {}", self.to_string())
-    }
+    #[error("IO error: {0}")]
+    IoError(#[from] io::Error),
 }
 
 impl ResponseError for JustBusError {
