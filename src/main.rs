@@ -3,8 +3,11 @@ extern crate jemallocator;
 
 use actix_web::{web, App, HttpServer};
 use argh::FromArgs;
-use lta::{prelude::*, r#async::lta_client::LTAClient};
-use std::{env, io, time::Duration};
+use lta::{Client, LTAClient};
+use std::{io, time::Duration};
+
+#[cfg(feature = "logging")]
+use std::env;
 
 mod errors;
 mod routes;
@@ -67,21 +70,24 @@ async fn main() -> io::Result<()> {
     }
 
     let ip_and_port = args.ip_addr.unwrap_or("127.0.0.1:8080".to_string());
+    let client = LTAClient::with_api_key(args.api_key)
+        .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Invalid API Key!"))?;
 
-    let client = LTAClient::with_api_key(args.api_key);
+    #[cfg(any(feature = "cht", feature = "dashmap"))]
+    let cache = web::Data::new(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
+
+    #[cfg(feature = "swisstable")]
+    let cache = web::Data::new(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
+        TTL, SZ,
+    )));
+
     let server = HttpServer::new(move || {
         let app = App::new()
             .route("/api/v1/health", web::get().to(health))
             .route("/api/v1/timings/{bus_stop}", web::get().to(bus_arrivals))
-            .data(client.clone());
+            .app_data(web::Data::new(client.clone()));
 
-        #[cfg(any(feature = "cht", feature = "dashmap"))]
-        let app = app.data(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
-
-        #[cfg(feature = "swisstable")]
-        let app = app.data(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
-            TTL, SZ,
-        )));
+        let app = app.app_data(cache.clone());
 
         #[cfg(feature = "logging")]
         let app = app
