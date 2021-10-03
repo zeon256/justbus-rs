@@ -1,24 +1,50 @@
-name: Rust
+  name: Test Rust project
+  on: [ push ]
+  jobs:
+    check-default:
+      if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
+      runs-on: ${{ matrix.os }}
+      strategy:
+        matrix:
+          os: [ ubuntu-latest, windows-latest, macOS-latest ]
+          rust: [ stable ]
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+      steps:
+        - uses: hecrj/setup-rust-action@v1
+          with:
+            rust-version: ${{ matrix.rust }}
+        - uses: actions/checkout@master
+        - name: Run tests
+          run: cargo check --verbose
 
-env:
-  CARGO_TERM_COLOR: always
+    check-dashmap:
+      if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
+      runs-on: ${{ matrix.os }}
+      strategy:
+        matrix:
+          os: [ ubuntu-latest, windows-latest, macOS-latest ]
+          rust: [ stable, nightly ]
 
-jobs:
-  build:
+      steps:
+        - uses: hecrj/setup-rust-action@v1
+          with:
+            rust-version: ${{ matrix.rust }}
+        - uses: actions/checkout@master
+        - name: Run tests
+          run: cargo check --no-default-features --features dashmap --verbose
 
-    runs-on: ubuntu-latest
+    check-logging-tls:
+      if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
+      runs-on: ${{ matrix.os }}
+      strategy:
+        matrix:
+          os: [ ubuntu-latest, windows-latest, macOS-latest ]
+          rust: [ stable, nightly ]
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check Dashmap
-        run: cargo check --no-default-features --features dashmap --verbose
-      - name: Check cht
-        run: cargo check --no-default-features --features cht --verbose
-      - name: Check logging and tls
-        run: cargo check --features logging,tls --verbose
+      steps:
+        - uses: hecrj/setup-rust-action@v1
+          with:
+            rust-version: ${{ matrix.rust }}
+        - uses: actions/checkout@master
+        - name: Run tests
+          run: cargo check --features logging,tls --verbose
