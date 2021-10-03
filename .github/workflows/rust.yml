@@ -21,4 +21,4 @@ jobs:
       - name: Check cht
         run: cargo check --no-default-features --features cht --verbose
       - name: Check logging and tls
-        run: cargo check --features swisstable,logging,tls --verbose
+        run: cargo check --features logging,tls --verbose

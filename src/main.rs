@@ -32,15 +32,6 @@ use dashmap_time::Cache;
 #[cfg(feature = "logging")]
 use actix_web::middleware::Logger;
 
-#[cfg(feature = "tls")]
-use std::{fs::File, io::BufReader};
-
-#[cfg(feature = "tls")]
-use rustls::{
-    internal::pemfile::{certs, rsa_private_keys},
-    NoClientAuth, ServerConfig,
-};
-
 #[cfg(target_os = "windows")]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -51,19 +42,26 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 const TTL: Duration = Duration::from_secs(15);
 
-// const DAY_TTL: Duration = Duration::from_secs(86400);
 const SZ: usize = 500;
 
 #[cfg(feature = "tls")]
-fn load_ssl_keys() -> ServerConfig {
-    let mut config = ServerConfig::new(NoClientAuth::new());
-    let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
-    let key_file = &mut BufReader::new(File::open("key-rsa.pem").unwrap());
-    let cert_chain = certs(cert_file).unwrap();
-    let mut keys = rsa_private_keys(key_file).unwrap();
-    config.set_single_cert(cert_chain, keys.remove(0)).unwrap();
+fn load_ssl_keys() -> io::Result<rustls::ServerConfig> {
+    use rustls::{NoClientAuth, ServerConfig, internal::pemfile::{certs, rsa_private_keys}};
+    use std::{fs::File, io::BufReader};
 
-    config
+
+    let cert = &mut BufReader::new(File::open("cert.pem")?);
+    let key = &mut BufReader::new(File::open("key-rsa.pem")?);
+
+    let certs = certs(cert).unwrap();
+    let mut private_key = rsa_private_keys(key).unwrap();
+
+    let mut server_cfg = ServerConfig::new(NoClientAuth::new());
+    server_cfg
+        .set_single_cert(certs, private_key.remove(0))
+        .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Bad cert/key"))?;
+
+    Ok(server_cfg)
 }
 
 #[actix_web::main]
@@ -106,7 +104,7 @@ async fn main() -> io::Result<()> {
 
     #[cfg(feature = "tls")]
     let res = {
-        let config = load_ssl_keys();
+        let config = load_ssl_keys()?;
         server.bind_rustls(ip_and_port, config)?.run().await
     };
 

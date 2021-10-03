@@ -7,3 +7,4 @@ mkcert-v1.4.1-linux-amd64
 key-rsa.pem
 key.pem
 cert.pem
+localhost-key.pem
