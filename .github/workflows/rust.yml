@@ -17,13 +17,29 @@
         - name: Run tests
           run: cargo check --verbose
 
+    check-default-nightly:
+      if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
+      runs-on: ${{ matrix.os }}
+      strategy:
+        matrix:
+          os: [ ubuntu-latest, windows-latest, macOS-latest ]
+          rust: [ nightly ]
+
+      steps:
+        - uses: hecrj/setup-rust-action@v1
+          with:
+            rust-version: ${{ matrix.rust }}
+        - uses: actions/checkout@master
+        - name: Run tests
+          run: cargo check --features nightly --verbose
+
     check-dashmap:
       if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
       runs-on: ${{ matrix.os }}
       strategy:
         matrix:
           os: [ ubuntu-latest, windows-latest, macOS-latest ]
-          rust: [ stable, nightly ]
+          rust: [ stable ]
 
       steps:
         - uses: hecrj/setup-rust-action@v1
@@ -39,7 +55,7 @@
       strategy:
         matrix:
           os: [ ubuntu-latest, windows-latest, macOS-latest ]
-          rust: [ stable, nightly ]
+          rust: [ stable ]
 
       steps:
         - uses: hecrj/setup-rust-action@v1
