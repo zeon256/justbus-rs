@@ -1,6 +1,3 @@
-#[cfg(not(target_env = "msvc"))]
-extern crate jemallocator;
-
 #[cfg(target_os = "windows")]
 use mimalloc::MiMalloc;
 
@@ -17,11 +14,8 @@ mod routes;
 
 use crate::routes::{bus_arrivals::*, health};
 
-#[cfg(feature = "cht")]
-use cht_time::Cache;
-
 #[cfg(feature = "swisstable")]
-use hashbrown_time::Cache as SwissCache;
+use hashbrown_time::Cache;
 
 #[cfg(feature = "swisstable")]
 use parking_lot::RwLock;
@@ -41,14 +35,15 @@ static GLOBAL: MiMalloc = MiMalloc;
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 const TTL: Duration = Duration::from_secs(15);
-
 const SZ: usize = 500;
 
 #[cfg(feature = "tls")]
 fn load_ssl_keys() -> io::Result<rustls::ServerConfig> {
-    use rustls::{NoClientAuth, ServerConfig, internal::pemfile::{certs, rsa_private_keys}};
+    use rustls::{
+        internal::pemfile::{certs, rsa_private_keys},
+        NoClientAuth, ServerConfig,
+    };
     use std::{fs::File, io::BufReader};
-
 
     let cert = &mut BufReader::new(File::open("cert.pem")?);
     let key = &mut BufReader::new(File::open("key-rsa.pem")?);
@@ -78,11 +73,11 @@ async fn main() -> io::Result<()> {
     let client = LTAClient::with_api_key(args.api_key)
         .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Invalid API Key!"))?;
 
-    #[cfg(any(feature = "cht", feature = "dashmap"))]
+    #[cfg(feature = "dashmap")]
     let cache = web::Data::new(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
 
     #[cfg(feature = "swisstable")]
-    let cache = web::Data::new(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
+    let cache = web::Data::new(RwLock::new(Cache::<u32, String>::with_ttl_and_size(
         TTL, SZ,
     )));
 
