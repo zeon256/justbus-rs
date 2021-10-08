@@ -5,6 +5,7 @@ use actix_web::{web, App, HttpServer};
 use argh::FromArgs;
 use lta::{Client, LTAClient};
 use std::{io, time::Duration};
+use std::cell::{Cell, RefCell};
 
 #[cfg(feature = "logging")]
 use std::env;
@@ -17,7 +18,7 @@ use crate::routes::{bus_arrivals::*, health};
 #[cfg(feature = "swisstable")]
 use hashbrown_time::Cache;
 
-#[cfg(feature = "swisstable")]
+#[cfg(all(feature = "swisstable", not(feature = "threadlocal")))]
 use parking_lot::RwLock;
 
 #[cfg(feature = "dashmap")]
@@ -76,7 +77,7 @@ async fn main() -> io::Result<()> {
     #[cfg(feature = "dashmap")]
     let cache = web::Data::new(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
 
-    #[cfg(feature = "swisstable")]
+    #[cfg(all(feature = "swisstable", not(feature = "threadlocal")))]
     let cache = web::Data::new(RwLock::new(Cache::<u32, String>::with_ttl_and_size(
         TTL, SZ,
     )));
@@ -87,7 +88,14 @@ async fn main() -> io::Result<()> {
             .route("/api/v1/timings/{bus_stop}", web::get().to(bus_arrivals))
             .app_data(web::Data::new(client.clone()));
 
+        // #[cfg(all(feature = "swisstable", feature = "dashmap", not(feature = "threadlocal")))]
+        #[cfg(not(feature = "threadlocal"))]
         let app = app.app_data(cache.clone());
+
+        #[cfg(all(feature = "swisstable", feature = "threadlocal"))]
+        let app = app.app_data(web::Data::new(RefCell::new(Cache::<u32, String>::with_ttl_and_size(
+            TTL, SZ,
+        ))));
 
         #[cfg(feature = "logging")]
         let app = app
