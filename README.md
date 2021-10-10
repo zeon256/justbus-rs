@@ -157,10 +157,8 @@ Click to show API response
 </details>
 
 ## Feature flags
-The following features can be activated during compile time. Program will **NOT** compile if there are no feature flags! Multiple caching strategies are implemented as 
-different machines perform differently with each of them. A machine with lesser physical cores may benefit more from `cht` and `dashmap` whereas a higher core machine may not see
-any difference between any of the caching strategies. Like always, you should benchmark them yourself if performance is a concern!
-- `swisstable` (recommended)
+The following features can be activated during compile time. Multiple caching strategies are implemented as different machines perform differently with each of them. A machine with lesser physical cores may benefit more from `cht` and `dashmap` whereas a higher core machine may not see any difference between any of the caching strategies. Like always, you should benchmark them yourself if performance is a concern!
+- `swisstable` (recommended/default)
 - [`dashmap`](https://github.com/xacrimon/dashmap)
 - [`cht`](https://github.com/Gregory-Meyer/cht)
 - `tls` (using Rustls)
@@ -198,6 +196,9 @@ Memory Usage @ Peak: 21MB
 ## How to build
 Requirements: `jemalloc` and `libssl`. Binary will be at `/target/release` folder.
 ```
+# Vanilla build
+cargo build
+
 # Lets say we want to use dashmap, logging and tls
 cargo build --release --features tls,logging,dashmap
 
