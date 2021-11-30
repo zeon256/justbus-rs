@@ -194,7 +194,9 @@ Memory Usage @ Peak: 21MB
 ```
 
 ## How to build
-Requirements: `jemalloc` and `libssl`. Binary will be at `/target/release` folder.
+Requirements: `jemalloc` and `libssl`. Rust 1.51.0 is required at minimum.
+
+Binary will be at `/target/release` folder.
 ```
 # Vanilla build
 cargo build
