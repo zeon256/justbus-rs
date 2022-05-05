@@ -1,6 +1,3 @@
-#[cfg(not(any(target_env = "msvc")))]
-extern crate jemallocator;
-
 use actix_web::{web, App, HttpServer};
 use argh::FromArgs;
 use lta::{Client, LTAClient};
@@ -10,9 +7,6 @@ mod errors;
 mod routes;
 
 use crate::routes::{bus_arrivals::*, health};
-
-#[cfg(feature = "cht")]
-use cht_time::Cache;
 
 #[cfg(feature = "swisstable")]
 use hashbrown_time::Cache as SwissCache;
@@ -37,12 +31,12 @@ use rustls::{
 
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
+static ALLOC: tikv_jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 const TTL: Duration = Duration::from_secs(15);
 
 // const DAY_TTL: Duration = Duration::from_secs(86400);
-const SZ: usize = 500;
+const SZ: usize = 5000;
 
 #[cfg(feature = "tls")]
 fn load_ssl_keys() -> ServerConfig {
@@ -73,12 +67,12 @@ async fn main() -> io::Result<()> {
         let app = App::new()
             .route("/api/v1/health", web::get().to(health))
             .route("/api/v1/timings/{bus_stop}", web::get().to(bus_arrivals))
-            .data(client.clone());
+            .app_data(client.clone());
 
         // thing to note
         // app.data -> non thread local
         // app.app_data -> shared across
-        #[cfg(any(feature = "cht", feature = "dashmap"))]
+        #[cfg(feature = "dashmap")]
         let app = app.app_data(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
 
         #[cfg(feature = "swisstable")]
