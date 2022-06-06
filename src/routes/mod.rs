@@ -1,4 +1,4 @@
-//! All functions are kept seperate for ease of reading
+//! All functions are kept separate for ease of reading
 //! and to make it easier to add or remove stuff
 
 pub mod bus_arrivals;

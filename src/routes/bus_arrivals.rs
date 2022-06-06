@@ -21,14 +21,12 @@ pub async fn bus_arrivals(
     client: web::Data<LTAClient>,
 ) -> JustBusResult {
     let bus_stop = bus_stop.into_inner();
-
     let in_lru = lru.get(&bus_stop);
 
     let res = match in_lru {
-        #[rustfmt::skip]
-        Some(f) => {
-            HttpResponse::Ok().content_type("application/json").body(f.value.clone())
-        },
+        Some(f) => HttpResponse::Ok()
+            .content_type("application/json")
+            .body(f.value.clone()),
         None => {
             #[cfg(feature = "logging")]
             info!(
@@ -36,7 +34,7 @@ pub async fn bus_arrivals(
                 bus_stop
             );
 
-            let arrivals = Bus::get_arrival::<_, &str>(&client, bus_stop, None).await?;
+            let arrivals = Bus::get_arrival(&client, bus_stop, None).await?;
 
             let arrival_str = serde_json::to_string(&arrivals.services).unwrap();
             lru.insert(bus_stop, arrival_str.clone());
@@ -59,12 +57,10 @@ pub async fn bus_arrivals(
 ) -> JustBusResult {
     let bus_stop = bus_stop.into_inner();
     let lru_r = lru.read();
-    let in_lru = lru_r.get(bus_stop);
+    let in_lru = lru_r.get(bus_stop).cloned();
 
     let res = match in_lru {
-        Some(f) => HttpResponse::Ok()
-            .content_type("application/json")
-            .body(f.clone()),
+        Some(f) => HttpResponse::Ok().content_type("application/json").body(f),
         None => {
             // drop the lock
             drop(lru_r);
@@ -75,7 +71,7 @@ pub async fn bus_arrivals(
                 bus_stop
             );
 
-            let arrivals = Bus::get_arrival::<_, &str>(&client, bus_stop, None).await?;
+            let arrivals = Bus::get_arrival(&client, bus_stop, None).await?;
 
             let mut lru_w = lru.write();
             let arrival_str = serde_json::to_string(&arrivals.services).unwrap();
