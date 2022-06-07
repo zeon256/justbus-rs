@@ -158,14 +158,12 @@ Click to show API response
 
 ## Feature flags
 The following features can be activated during compile time. Program will **NOT** compile if there are no feature flags! Multiple caching strategies are implemented as 
-different machines perform differently with each of them. A machine with lesser physical cores may benefit more from `cht` and `dashmap` whereas a higher core machine may not see
-any difference between any of the caching strategies. Like always, you should benchmark them yourself if performance is a concern!
+different machines perform differently with each of them. A machine with lesser physical cores may benefit more from `dashmap` whereas a higher core machine may not see any difference between any of the caching strategies. As always, you should benchmark them yourself if performance is a concern!
 - `swisstable` (recommended)
 - [`dashmap`](https://github.com/xacrimon/dashmap)
-- [`cht`](https://github.com/Gregory-Meyer/cht)
 - `tls` (using Rustls)
 - `logging` 
-- `nightly` (To be paired with `swisstable`, enables hardware lock elision for `RwLock`)
+- `hw-lock-elision` (To be paired with `swisstable`, enables hardware lock elision for `RwLock`)
 
 ## Optimisations (in order of impact)
 - Caching response with a hashmap
@@ -200,9 +198,6 @@ Requirements: `jemalloc` and `libssl`. Binary will be at `/target/release` folde
 ```
 # Lets say we want to use dashmap, logging and tls
 cargo build --release --features tls,logging,dashmap
-
-# How about default and nightly
-cargo build --release --features nightly
 ```
 
 ## How to run
@@ -227,7 +222,6 @@ openssl rsa -in localhost-key.pem -out key-rsa.pem
 
 # Then run the program normally
 ```
-
 
 ## Docker
 By default, docker image uses `swisstable` feature. If you need the other features, you will need to modify Dockerfile and build your own image.
