@@ -31,7 +31,7 @@ use rustls::{Certificate, PrivateKey, ServerConfig};
 
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
-static ALLOC: tikv_jemallocator::Jemalloc = jemallocator::Jemalloc;
+static ALLOC: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
 const TTL: Duration = Duration::from_secs(15);
 
