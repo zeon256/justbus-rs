@@ -9,6 +9,3 @@ edition = "2018"
 [dependencies]
 justbus-utils = { path = "../justbus-utils" }
 ahash = "0.7.6"
-
-[dev-dependencies]
-parking_lot = "0.11.0"

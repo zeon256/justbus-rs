@@ -5,6 +5,38 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::time::{Duration, Instant};
 
+pub struct Cache<K: Hash + Eq, V: Debug> {
+    map: HashMap<K, InternalEntry<V>, RandomState>,
+    ttl: Duration,
+}
+
+impl<K: Hash + Eq, V: Debug> Cache<K, V> {
+    pub fn with_ttl(ttl: Duration) -> Self {
+        Cache {
+            map: HashMap::<K, InternalEntry<V>, _>::default(),
+            ttl,
+        }
+    }
+
+    pub fn with_ttl_and_size(ttl: Duration, capacity: usize) -> Self {
+        let map = HashMap::<K, InternalEntry<V>, RandomState>::with_capacity_and_hasher(
+            capacity,
+            RandomState::default(),
+        );
+
+        Cache { map, ttl }
+    }
+
+    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
+        let to_insert = InternalEntry::new(value, Instant::now() + self.ttl);
+        self.map.insert(key, to_insert).map(|v| v.value)
+    }
+
+    pub fn get(&self, key: K) -> Option<&V> {
+        self.map.get(&key).and_then(|f| f.get())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::Cache;
@@ -60,37 +92,5 @@ mod test {
         let hm_r = hm.read().unwrap();
         assert_eq!(hm_r.get(32), Some(&"hello_32_replaced"));
         println!("{:?}", hm_r.get(32));
-    }
-}
-
-pub struct Cache<K: Hash + Eq, V: Debug> {
-    map: HashMap<K, InternalEntry<V>, RandomState>,
-    ttl: Duration,
-}
-
-impl<K: Hash + Eq, V: Debug> Cache<K, V> {
-    pub fn with_ttl(ttl: Duration) -> Self {
-        Cache {
-            map: HashMap::<K, InternalEntry<V>, _>::default(),
-            ttl,
-        }
-    }
-
-    pub fn with_ttl_and_size(ttl: Duration, capacity: usize) -> Self {
-        let map = HashMap::<K, InternalEntry<V>, RandomState>::with_capacity_and_hasher(
-            capacity,
-            RandomState::default(),
-        );
-
-        Cache { map, ttl }
-    }
-
-    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
-        let to_insert = InternalEntry::new(value, Instant::now() + self.ttl);
-        self.map.insert(key, to_insert).map(|v| v.value)
-    }
-
-    pub fn get(&self, key: K) -> Option<&V> {
-        self.map.get(&key).and_then(|f| f.get())
     }
 }
