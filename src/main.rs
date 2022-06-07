@@ -24,10 +24,10 @@ use actix_web::middleware::Logger;
 use std::{fs::File, io::BufReader};
 
 #[cfg(feature = "tls")]
-use rustls::{
-    internal::pemfile::{certs, rsa_private_keys},
-    NoClientAuth, ServerConfig,
-};
+use rustls_pemfile::{certs, rsa_private_keys};
+
+#[cfg(feature = "rustls")]
+use rustls::{Certificate, PrivateKey, ServerConfig};
 
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
@@ -40,14 +40,25 @@ const SZ: usize = 5000;
 
 #[cfg(feature = "tls")]
 fn load_ssl_keys() -> ServerConfig {
-    let mut config = ServerConfig::new(NoClientAuth::new());
     let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
     let key_file = &mut BufReader::new(File::open("key-rsa.pem").unwrap());
-    let cert_chain = certs(cert_file).unwrap();
-    let mut keys = rsa_private_keys(key_file).unwrap();
-    config.set_single_cert(cert_chain, keys.remove(0)).unwrap();
+    let cert_chain = certs(cert_file)
+        .unwrap()
+        .into_iter()
+        .map(|s| Certificate(s))
+        .collect();
 
-    config
+    let mut keys = rsa_private_keys(key_file)
+        .unwrap()
+        .into_iter()
+        .map(|s| PrivateKey(s))
+        .collect::<Vec<_>>();
+
+    ServerConfig::builder()
+        .with_safe_defaults()
+        .with_no_client_auth()
+        .with_single_cert(cert_chain, keys.remove(0))
+        .unwrap()
 }
 
 #[actix_web::main]

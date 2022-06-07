@@ -13,7 +13,7 @@
         <img src="https://img.shields.io/github/workflow/status/BudiNverse/justbus-rs/Rust?logo=github">
     </a>
     <a href="https://github.com/BudiNverse/lta-rs">
-        <img src="https://img.shields.io/badge/rust-1.4.4-blueviolet.svg?logo=rust"/>
+        <img src="https://img.shields.io/badge/rust-1.5.6-blueviolet.svg?logo=rust"/>
     </a>      
 </p>
 
