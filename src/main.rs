@@ -62,23 +62,25 @@ async fn main() -> io::Result<()> {
 
     let ip_and_port = args.ip_addr.unwrap_or("127.0.0.1:8080".to_string());
 
-    let client = LTAClient::with_api_key(args.api_key).unwrap();
+    // things to note
+    // if cache is created outside closure => global
+    // else it is local to the thread worker
+    #[cfg(feature = "dashmap")]
+    let cache = web::Data::new(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
+
+    #[cfg(feature = "swisstable")]
+    let cache = web::Data::new(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
+        TTL, SZ,
+    )));
+
+    let client = web::Data::new(LTAClient::with_api_key(args.api_key).unwrap());
+
     let server = HttpServer::new(move || {
         let app = App::new()
             .route("/api/v1/health", web::get().to(health))
             .route("/api/v1/timings/{bus_stop}", web::get().to(bus_arrivals))
-            .app_data(client.clone());
-
-        // thing to note
-        // app.data -> non thread local
-        // app.app_data -> shared across
-        #[cfg(feature = "dashmap")]
-        let app = app.app_data(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
-
-        #[cfg(feature = "swisstable")]
-        let app = app.app_data(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
-            TTL, SZ,
-        )));
+            .app_data(client.clone())
+            .app_data(cache.clone());
 
         #[cfg(feature = "logging")]
         let app = app
