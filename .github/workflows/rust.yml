@@ -20,7 +20,5 @@ jobs:
         run: cargo check --features swisstable --verbose
       - name: Check Dashmap
         run: cargo check --features dashmap --verbose
-      - name: Check cht
-        run: cargo check --features cht --verbose
       - name: Check logging and tls
         run: cargo check --features swisstable,logging,tls --verbose
