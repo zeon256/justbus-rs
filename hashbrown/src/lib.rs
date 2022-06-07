@@ -1,3 +1,4 @@
+use ahash::RandomState;
 use justbus_utils::InternalEntry;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -7,8 +8,7 @@ use std::time::{Duration, Instant};
 #[cfg(test)]
 mod test {
     use crate::Cache;
-    use crossbeam::thread::scope;
-    use std::sync::{Arc, RwLock as StdRwLock};
+    use std::sync::RwLock as StdRwLock;
     use std::thread;
     use std::time::Duration;
 
@@ -64,23 +64,25 @@ mod test {
 }
 
 pub struct Cache<K: Hash + Eq, V: Debug> {
-    map: HashMap<K, InternalEntry<V>>,
+    map: HashMap<K, InternalEntry<V>, RandomState>,
     ttl: Duration,
 }
 
 impl<K: Hash + Eq, V: Debug> Cache<K, V> {
     pub fn with_ttl(ttl: Duration) -> Self {
         Cache {
-            map: HashMap::<K, InternalEntry<V>>::new(),
+            map: HashMap::<K, InternalEntry<V>, _>::default(),
             ttl,
         }
     }
 
     pub fn with_ttl_and_size(ttl: Duration, capacity: usize) -> Self {
-        Cache {
-            map: HashMap::<K, InternalEntry<V>>::with_capacity(capacity),
-            ttl,
-        }
+        let map = HashMap::<K, InternalEntry<V>, RandomState>::with_capacity_and_hasher(
+            capacity,
+            RandomState::default(),
+        );
+
+        Cache { map, ttl }
     }
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
