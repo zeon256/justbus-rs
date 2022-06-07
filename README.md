@@ -4,7 +4,7 @@
       <img src="https://img.shields.io/badge/-justbus--rs-blueviolet.svg"/>
     </a>
         <a href="https://github.com/BudiNverse/justbus-rs">
-          <img src="https://img.shields.io/badge/version-0.3.0-ff69b4"/>
+          <img src="https://img.shields.io/badge/version-0.4.0-ff69b4"/>
         </a>
     <a href="https://github.com/BudiNverse/justbus-rs">
         <img src="https://img.shields.io/github/license/BudiNverse/lta-rs"/>

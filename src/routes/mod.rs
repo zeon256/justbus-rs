@@ -2,6 +2,7 @@
 //! and to make it easier to add or remove stuff
 
 pub mod bus_arrivals;
+pub mod bus_arrivals_bincode;
 
 use crate::errors::JustBusError;
 use actix_web::HttpResponse;

@@ -54,8 +54,6 @@ pub async fn bus_arrivals(
             #[cfg(not(feature = "dashmap"))]
             {
                 let mut lru_w = lru.write();
-                let arrival_str = serde_json::to_string(&arrivals.services).unwrap();
-
                 lru_w.insert(bus_stop, arrival_str.clone());
             }
 

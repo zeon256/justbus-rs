@@ -1,6 +1,7 @@
 use actix_web::{web, App, HttpServer};
 use argh::FromArgs;
 use lta::{Client, LTAClient};
+use routes::bus_arrivals_bincode::bus_arrivals_bincode;
 use std::{io, time::Duration};
 
 mod errors;
@@ -76,11 +77,20 @@ async fn main() -> io::Result<()> {
     // things to note
     // if cache is created outside closure => global
     // else it is local to the thread worker
+
     #[cfg(feature = "dashmap")]
     let cache = web::Data::new(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
 
+    #[cfg(feature = "dashmap")]
+    let cache_bincode = web::Data::new(Cache::<u32, Vec<u8>>::with_ttl_and_size(TTL, SZ));
+
     #[cfg(feature = "swisstable")]
     let cache = web::Data::new(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
+        TTL, SZ,
+    )));
+
+    #[cfg(feature = "swisstable")]
+    let cache_bincode = web::Data::new(RwLock::new(SwissCache::<u32, Vec<u8>>::with_ttl_and_size(
         TTL, SZ,
     )));
 
@@ -90,8 +100,10 @@ async fn main() -> io::Result<()> {
         let app = App::new()
             .route("/api/v1/health", web::get().to(health))
             .route("/api/v1/timings/{bus_stop}", web::get().to(bus_arrivals))
+            .route("/api/v1/timings/bc/{bus_stop}", web::get().to(bus_arrivals_bincode))
             .app_data(client.clone())
-            .app_data(cache.clone());
+            .app_data(cache.clone())
+            .app_data(cache_bincode.clone());
 
         #[cfg(feature = "logging")]
         let app = app
