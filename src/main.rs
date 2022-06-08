@@ -83,21 +83,61 @@ async fn main() -> io::Result<()> {
     // if cache is created outside closure => global
     // else it is local to the thread worker
 
-    #[cfg(feature = "dashmap")]
+    #[cfg(all(feature = "dashmap", not(feature = "fxhash")))]
     let cache = web::Data::new(Cache::<u32, String>::with_ttl_and_size(TTL, SZ));
 
-    #[cfg(feature = "dashmap")]
+    #[cfg(all(feature = "dashmap", not(feature = "fxhash")))]
     let cache_bincode = web::Data::new(Cache::<u32, Vec<u8>>::with_ttl_and_size(TTL, SZ));
 
-    #[cfg(feature = "swisstable")]
+    #[cfg(all(feature = "swisstable", not(feature = "fxhash")))]
     let cache = web::Data::new(RwLock::new(SwissCache::<u32, String>::with_ttl_and_size(
         TTL, SZ,
     )));
 
-    #[cfg(feature = "swisstable")]
+    #[cfg(all(feature = "swisstable", not(feature = "fxhash")))]
     let cache_bincode = web::Data::new(RwLock::new(SwissCache::<u32, Vec<u8>>::with_ttl_and_size(
         TTL, SZ,
     )));
+
+    #[cfg(all(feature = "fxhash", feature = "dashmap"))]
+    let cache = {
+        use std::hash::BuildHasherDefault;
+
+        let hasher = BuildHasherDefault::<rustc_hash::FxHasher>::default();
+        web::Data::new(Cache::<u32, String, _>::with_ttl_sz_and_hasher(
+            TTL, SZ, hasher,
+        ))
+    };
+
+    #[cfg(all(feature = "fxhash", feature = "dashmap"))]
+    let cache_bincode = {
+        use std::hash::BuildHasherDefault;
+
+        let hasher = BuildHasherDefault::<rustc_hash::FxHasher>::default();
+        web::Data::new(Cache::<u32, Vec<u8>, _>::with_ttl_sz_and_hasher(
+            TTL, SZ, hasher,
+        ))
+    };
+
+    #[cfg(all(feature = "fxhash", feature = "swisstable"))]
+    let cache = {
+        use std::hash::BuildHasherDefault;
+
+        let hasher = BuildHasherDefault::<rustc_hash::FxHasher>::default();
+        web::Data::new(RwLock::new(
+            SwissCache::<u32, String, _>::with_ttl_sz_and_hasher(TTL, SZ, hasher),
+        ))
+    };
+
+    #[cfg(all(feature = "fxhash", feature = "swisstable"))]
+    let cache_bincode = {
+        use std::hash::BuildHasherDefault;
+
+        let hasher = BuildHasherDefault::<rustc_hash::FxHasher>::default();
+        web::Data::new(RwLock::new(
+            SwissCache::<u32, Vec<u8>, _>::with_ttl_sz_and_hasher(TTL, SZ, hasher),
+        ))
+    };
 
     let client = web::Data::new(LTAClient::with_api_key(args.api_key).unwrap());
 
@@ -105,7 +145,10 @@ async fn main() -> io::Result<()> {
         let app = App::new()
             .route("/api/v1/health", web::get().to(health))
             .route("/api/v1/timings/{bus_stop}", web::get().to(bus_arrivals))
-            .route("/api/v1/timings/bc/{bus_stop}", web::get().to(bus_arrivals_bincode))
+            .route(
+                "/api/v1/timings/bc/{bus_stop}",
+                web::get().to(bus_arrivals_bincode),
+            )
             .app_data(client.clone())
             .app_data(cache.clone())
             .app_data(cache_bincode.clone());

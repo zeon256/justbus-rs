@@ -24,6 +24,7 @@ serde = {version = "1.0"}
 serde_json = "1.0"
 tikv-jemallocator = {version = "0.4.0", optional = true}
 mimalloc = {version = "0.1.29", default-features = false, optional = true}
+rustc-hash = {version = "1.1.0", optional = true}
 
 [features]
 dashmap = ["dashmap-time"]
@@ -35,6 +36,7 @@ nightly = ["parking_lot/nightly"]
 swisstable = ["hashbrown-time", "parking_lot"]
 tls = ["actix-web/rustls", "rustls", "rustls-pemfile"]
 msft-mimalloc = ["mimalloc"]
+fxhash = ["rustc-hash"]
 
 [workspace]
 members = [

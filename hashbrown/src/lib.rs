@@ -19,7 +19,7 @@ impl<K, V, S> Cache<K, V, S>
 where
     K: Hash + Eq,
     V: Debug,
-    S: BuildHasher + Clone,
+    S: BuildHasher,
 {
     pub fn with_ttl_sz_and_hasher(ttl: Duration, capacity: usize, hasher: S) -> Self {
         Cache {
