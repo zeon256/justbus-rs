@@ -30,6 +30,11 @@ use rustls_pemfile::{certs, rsa_private_keys};
 #[cfg(feature = "rustls")]
 use rustls::{Certificate, PrivateKey, ServerConfig};
 
+#[cfg(feature = "mimalloc")]
+#[global_allocator]
+static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
+#[cfg(feature = "jemalloc")]
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
 static ALLOC: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
