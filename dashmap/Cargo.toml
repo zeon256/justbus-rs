@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 dashmap = { version = "5.3.4", features = ["raw-api"] }
 justbus-utils  = { path = "../justbus-utils" }
+ahash = "0.7.6"

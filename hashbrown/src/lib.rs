@@ -2,29 +2,30 @@ use ahash::RandomState;
 use justbus_utils::InternalEntry;
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::hash::Hash;
+use std::hash::{BuildHasher, Hash};
 use std::time::{Duration, Instant};
 
-pub struct Cache<K: Hash + Eq, V: Debug> {
-    map: HashMap<K, InternalEntry<V>, RandomState>,
+/// Cache that will expire based on the ttl provided
+/// 
+/// Can be wrapped in `Arc<RwLock<Cache<_, _>>>` to be used on multithreaded env
+/// 
+/// Defaults to AHash for Hasher
+pub struct Cache<K: Hash + Eq, V: Debug, S = RandomState> {
+    map: HashMap<K, InternalEntry<V>, S>,
     ttl: Duration,
 }
 
-impl<K: Hash + Eq, V: Debug> Cache<K, V> {
-    pub fn with_ttl(ttl: Duration) -> Self {
+impl<K, V, S> Cache<K, V, S>
+where
+    K: Hash + Eq,
+    V: Debug,
+    S: BuildHasher + Clone,
+{
+    pub fn with_ttl_sz_and_hasher(ttl: Duration, capacity: usize, hasher: S) -> Self {
         Cache {
-            map: HashMap::<K, InternalEntry<V>, _>::default(),
+            map: HashMap::with_capacity_and_hasher(capacity, hasher),
             ttl,
         }
-    }
-
-    pub fn with_ttl_and_size(ttl: Duration, capacity: usize) -> Self {
-        let map = HashMap::<K, InternalEntry<V>, RandomState>::with_capacity_and_hasher(
-            capacity,
-            RandomState::default(),
-        );
-
-        Cache { map, ttl }
     }
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
@@ -34,6 +35,28 @@ impl<K: Hash + Eq, V: Debug> Cache<K, V> {
 
     pub fn get(&self, key: K) -> Option<&V> {
         self.map.get(&key).and_then(|f| f.get())
+    }
+}
+
+impl<K, V> Cache<K, V, RandomState>
+where
+    K: Hash + Eq,
+    V: Debug,
+{
+    pub fn with_ttl(ttl: Duration) -> Self {
+        Cache {
+            map: HashMap::<K, InternalEntry<V>, _>::default(),
+            ttl,
+        }
+    }
+
+    pub fn with_ttl_and_size(ttl: Duration, capacity: usize) -> Self {
+        let map = HashMap::<K, InternalEntry<V>, _>::with_capacity_and_hasher(
+            capacity,
+            RandomState::default(),
+        );
+
+        Cache { map, ttl }
     }
 }
 
@@ -92,5 +115,12 @@ mod test {
         let hm_r = hm.read().unwrap();
         assert_eq!(hm_r.get(32), Some(&"hello_32_replaced"));
         println!("{:?}", hm_r.get(32));
+    }
+
+    #[test]
+    fn construct_std_hasher() {
+        use std::collections::hash_map::RandomState as StdRandomState;
+        let s = StdRandomState::new();
+        let _ = Cache::<u32, &str, _>::with_ttl_sz_and_hasher(Duration::from_secs(1), 500, s);
     }
 }

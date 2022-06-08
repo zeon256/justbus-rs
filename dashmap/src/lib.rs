@@ -1,25 +1,29 @@
+use ahash::RandomState;
 use dashmap::{mapref::one::Ref, DashMap};
 use justbus_utils::InternalEntry;
 use std::fmt::Debug;
-use std::hash::Hash;
+use std::hash::{BuildHasher, Hash};
 use std::time::{Duration, Instant};
 
-pub struct Cache<K: Hash + Eq, V: Debug> {
-    map: DashMap<K, InternalEntry<V>>,
+/// Cache that will expire based on the ttl provided
+/// 
+/// DOES NOT NEED TO BE WRAPPED IN RwLock to be used in multithreaded code
+/// 
+/// Defaults to AHash for Hasher
+pub struct Cache<K: Hash + Eq, V: Debug, S = RandomState> {
+    map: DashMap<K, InternalEntry<V>, S>,
     ttl: Duration,
 }
 
-impl<K: Hash + Eq, V: Debug> Cache<K, V> {
-    pub fn with_ttl(ttl: Duration) -> Self {
+impl<K, V, S> Cache<K, V, S>
+where
+    K: Hash + Eq,
+    V: Debug,
+    S: BuildHasher + Clone,
+{
+    pub fn with_ttl_sz_and_hasher(ttl: Duration, capacity: usize, hasher: S) -> Self {
         Cache {
-            map: DashMap::<K, InternalEntry<V>>::new(),
-            ttl,
-        }
-    }
-
-    pub fn with_ttl_and_size(ttl: Duration, capacity: usize) -> Self {
-        Cache {
-            map: DashMap::<K, InternalEntry<V>>::with_capacity(capacity),
+            map: DashMap::with_capacity_and_hasher(capacity, hasher),
             ttl,
         }
     }
@@ -29,17 +33,39 @@ impl<K: Hash + Eq, V: Debug> Cache<K, V> {
         self.map.insert(key, to_insert).map(|v| v.value)
     }
 
-    pub fn get(&self, key: &K) -> Option<Ref<K, InternalEntry<V>>> {
+    pub fn get(&self, key: &K) -> Option<Ref<K, InternalEntry<V>, S>> {
         self.map
             .get(&key)
             .and_then(|f| if !f.is_expired() { Some(f) } else { None })
     }
 }
 
+impl<K, V> Cache<K, V, RandomState>
+where
+    K: Hash + Eq,
+    V: Debug,
+{
+    pub fn with_ttl(ttl: Duration) -> Self {
+        Cache {
+            map: DashMap::<K, InternalEntry<V>, RandomState>::default(),
+            ttl,
+        }
+    }
+
+    pub fn with_ttl_and_size(ttl: Duration, capacity: usize) -> Self {
+        Cache {
+            map: DashMap::<K, InternalEntry<V>, _>::with_capacity_and_hasher(
+                capacity,
+                RandomState::default(),
+            ),
+            ttl,
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::Cache;
-    use std::sync::RwLock as StdRwLock;
     use std::thread;
     use std::time::Duration;
 
@@ -73,19 +99,17 @@ mod test {
     }
 
     #[test]
-    fn hm_test_multi_threaded_std() {
-        let hm = StdRwLock::new(Cache::with_ttl(DURATION.clone()));
+    fn hm_test_multi_threaded() {
+        let hm = Cache::with_ttl(DURATION.clone());
 
         {
-            let hm_w = hm.write().unwrap();
             // insert an entry that will expire in 1s
-            hm_w.insert(32, "hello_32");
+            hm.insert(32, "hello_32");
             thread::sleep(DURATION.clone());
         }
 
         {
-            let hm_r = hm.read().unwrap();
-            let g = hm_r.get(&32);
+            let g = hm.get(&32);
 
             dbg!(&g);
             if let Some(_) = g {
@@ -94,18 +118,23 @@ mod test {
         }
 
         {
-            let hm_w = hm.write().unwrap();
             // check if value with same key is replaced
-            hm_w.insert(32, "hello_32_replaced");
+            hm.insert(32, "hello_32_replaced");
         }
 
-        let hm_r = hm.read().unwrap();
-        let g = hm_r.get(&32);
+        let g = hm.get(&32);
 
         dbg!(&g);
 
         if let None = g {
             panic!("Values dont match!");
         }
+    }
+
+    #[test]
+    fn construct_std_hasher() {
+        use std::collections::hash_map::RandomState as StdRandomState;
+        let s = StdRandomState::new();
+        let _ = Cache::<u32, &str, _>::with_ttl_sz_and_hasher(Duration::from_secs(1), 500, s);
     }
 }
