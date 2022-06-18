@@ -19,7 +19,7 @@ jobs:
       run: cargo build --features swisstable,logging,hw-lock-elision,tls,msft-mimalloc,fxhash
     - uses: actions/checkout@master
     - name: Check executable
-      run: readelf -p .comment target/release/justbus-rs
+      run: readelf -p .comment target/debug/justbus-rs
 
   build-dashmap:
     if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
@@ -39,7 +39,7 @@ jobs:
       run: cargo build --features dashmap,logging,tls,msft-mimalloc,fxhash
     - uses: actions/checkout@master
     - name: Check executable
-      run: readelf -p .comment target/release/justbus-rs
+      run: readelf -p .comment target/debug/justbus-rs
 
 
   build-nightly:
@@ -60,4 +60,4 @@ jobs:
       run: cargo build --features swisstable,nightly,logging,tls,msft-mimalloc,fxhash
     - uses: actions/checkout@master
     - name: Check executable
-      run: readelf -p .comment target/release/justbus-rs
+      run: readelf -p .comment target/debug/justbus-rs
