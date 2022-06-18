@@ -1,22 +1,6 @@
 name: Test Rust project
 on: [push]
 jobs:
-  check:
-    if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        rust: [stable]
-
-    steps:
-    - uses: BudiNverse/setup-rust-action@v1
-      with:
-        rust-version: ${{ matrix.rust }}
-    - uses: actions/checkout@master
-    - name: Run tests
-      run: cargo check
-
   build-swisstable:
     if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
     runs-on: ${{ matrix.os }}
@@ -28,7 +12,7 @@ jobs:
     steps:
     - uses: BudiNverse/setup-rust-action@v1
       with:
-        use-mold-linux: "1.3.0"
+        linux-mold-version: "1.3.0"
         rust-version: ${{ matrix.rust }}
     - uses: actions/checkout@master
     - name: Run tests
@@ -40,12 +24,12 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        rust: [stable, nightly]
+        rust: [stable]
 
     steps:
     - uses: BudiNverse/setup-rust-action@v1
       with:
-        use-mold-linux: "1.3.0"
+        linux-mold-version: "1.3.0"
         rust-version: ${{ matrix.rust }}
     - uses: actions/checkout@master
     - name: Run tests
@@ -62,7 +46,7 @@ jobs:
     steps:
     - uses: BudiNverse/setup-rust-action@v1
       with:
-        use-mold-linux: "1.3.0"
+        linux-mold-version: "1.3.0"
         rust-version: ${{ matrix.rust }}
     - uses: actions/checkout@master
     - name: Run tests
