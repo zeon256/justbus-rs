@@ -47,7 +47,7 @@ members = [
 
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"
-rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold"]
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/mold"]
 
 [profile.dev]
 opt-level = 0
