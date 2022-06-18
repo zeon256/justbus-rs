@@ -1,20 +1,69 @@
-name: Rust
-
+name: Test Rust project
 on: [push]
-
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  check:
+    if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable]
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Check Swisstable
-        run: cargo check --features swisstable --verbose
-      - name: Check Dashmap
-        run: cargo check --features dashmap --verbose
-      - name: Check logging and tls
-        run: cargo check --features swisstable,logging,tls --verbose
+    - uses: BudiNverse/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+    - uses: actions/checkout@master
+    - name: Run tests
+      run: cargo check
+
+  build-swisstable:
+    if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable]
+
+    steps:
+    - uses: BudiNverse/setup-rust-action@v1
+      with:
+        use-mold-linux: "1.3.0"
+        rust-version: ${{ matrix.rust }}
+    - uses: actions/checkout@master
+    - name: Run tests
+      run: cargo build --features swisstable,logging,hw-lock-elision,tls,msft-mimalloc,fxhash
+
+  build-dashmap:
+    if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable, nightly]
+
+    steps:
+    - uses: BudiNverse/setup-rust-action@v1
+      with:
+        use-mold-linux: "1.3.0"
+        rust-version: ${{ matrix.rust }}
+    - uses: actions/checkout@master
+    - name: Run tests
+      run: cargo build --features dashmap,logging,tls,msft-mimalloc,fxhash
+
+  build-nightly:
+    if: "!contains(github.event.head_commit.message, '[SKIP CI]')"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [nightly]
+
+    steps:
+    - uses: BudiNverse/setup-rust-action@v1
+      with:
+        use-mold-linux: "1.3.0"
+        rust-version: ${{ matrix.rust }}
+    - uses: actions/checkout@master
+    - name: Run tests
+      run: cargo build --features swisstable,nightly,logging,tls,msft-mimalloc,fxhash
