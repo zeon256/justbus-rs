@@ -10,7 +10,7 @@ jobs:
         rust: [stable]
 
     steps:
-    - uses: BudiNverse/setup-rust-action@v1
+    - uses: BudiNverse/setup-rust-action@master
       with:
         linux-mold-version: "1.3.0"
         rust-version: ${{ matrix.rust }}
@@ -27,7 +27,7 @@ jobs:
         rust: [stable]
 
     steps:
-    - uses: BudiNverse/setup-rust-action@v1
+    - uses: BudiNverse/setup-rust-action@master
       with:
         linux-mold-version: "1.3.0"
         rust-version: ${{ matrix.rust }}
@@ -44,7 +44,7 @@ jobs:
         rust: [nightly]
 
     steps:
-    - uses: BudiNverse/setup-rust-action@v1
+    - uses: BudiNverse/setup-rust-action@master
       with:
         linux-mold-version: "1.3.0"
         rust-version: ${{ matrix.rust }}
